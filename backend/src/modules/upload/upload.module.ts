@@ -1,0 +1,10 @@
+import { Module } from '@nestjs/common';
+import { UploadController } from './upload.controller';
+import { OssService } from '../../shared/services/oss.service';
+
+@Module({
+  controllers: [UploadController],
+  providers: [OssService],
+})
+export class UploadModule {}
+
