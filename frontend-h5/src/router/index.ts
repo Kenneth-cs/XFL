@@ -8,7 +8,7 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: () => import('@/views/HomeView.vue'),
-      meta: { title: '首页' }
+      meta: { title: '首页', noAuth: true }
     },
     {
       path: '/login',
@@ -27,6 +27,48 @@ const router = createRouter({
       name: 'profile',
       component: () => import('@/views/ProfileView.vue'),
       meta: { title: '个人中心' }
+    },
+    {
+      path: '/assessment',
+      name: 'assessment',
+      component: () => import('@/views/assessment/AssessmentCenter.vue'),
+      meta: { title: '测评中心' }
+    },
+    {
+      path: '/assessment/enneagram',
+      name: 'enneagram-test',
+      component: () => import('@/views/assessment/EnneagramTest.vue'),
+      meta: { title: '九型人格测试' }
+    },
+    {
+      path: '/assessment/enneagram/result',
+      name: 'enneagram-result',
+      component: () => import('@/views/assessment/EnneagramResult.vue'),
+      meta: { title: '测评结果' }
+    },
+    {
+      path: '/assessment/attachment',
+      name: 'attachment-test',
+      component: () => import('@/views/assessment/AttachmentTest.vue'),
+      meta: { title: '依恋关系测试' }
+    },
+    {
+      path: '/assessment/attachment/result',
+      name: 'attachment-result',
+      component: () => import('@/views/assessment/AttachmentResult.vue'),
+      meta: { title: '测评结果' }
+    },
+    {
+      path: '/assessment/happiness',
+      name: 'happiness-test',
+      component: () => import('@/views/assessment/HappinessTest.vue'),
+      meta: { title: '婚恋幸福力测试' }
+    },
+    {
+      path: '/assessment/happiness/result',
+      name: 'happiness-result',
+      component: () => import('@/views/assessment/HappinessResult.vue'),
+      meta: { title: '测评结果' }
     }
   ]
 })

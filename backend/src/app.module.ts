@@ -10,6 +10,7 @@ import { StoreModule } from './modules/store/store.module';
 import { UserModule } from './modules/user/user.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { UploadModule } from './modules/upload/upload.module';
+import { AssessmentModule } from './modules/assessment/assessment.module';
 import { SharedModule } from './shared/shared.module';
 
 @Module({
@@ -47,6 +48,7 @@ import { SharedModule } from './shared/shared.module';
     UserModule,
     ProfileModule,
     UploadModule,
+    AssessmentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

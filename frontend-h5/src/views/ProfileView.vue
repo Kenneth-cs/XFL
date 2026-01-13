@@ -23,17 +23,23 @@
       <van-cell-group title="测评记录">
         <van-cell title="九型人格测试" is-link @click="goToTest('enneagram')">
           <template #right-icon>
-            <van-tag type="warning">待完成</van-tag>
+            <van-tag :type="assessmentStatus.enneagram ? 'success' : 'warning'">
+              {{ assessmentStatus.enneagram ? '已完成' : '未测试' }}
+            </van-tag>
           </template>
         </van-cell>
         <van-cell title="依恋关系测试" is-link @click="goToTest('attachment')">
           <template #right-icon>
-            <van-tag type="warning">待完成</van-tag>
+            <van-tag :type="assessmentStatus.attachment ? 'success' : 'warning'">
+              {{ assessmentStatus.attachment ? '已完成' : '未测试' }}
+            </van-tag>
           </template>
         </van-cell>
         <van-cell title="婚恋幸福力测试" is-link @click="goToTest('happiness')">
           <template #right-icon>
-            <van-tag type="warning">待完成</van-tag>
+            <van-tag :type="assessmentStatus.happiness ? 'success' : 'warning'">
+              {{ assessmentStatus.happiness ? '已完成' : '未测试' }}
+            </van-tag>
           </template>
         </van-cell>
       </van-cell-group>
@@ -52,27 +58,46 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getUserProfile } from '@/api/user'
-import { showToast, showConfirmDialog } from 'vant'
+import { getLatestResults } from '@/api/assessment'
+import { showToast } from '@/utils/toast'
+import { showConfirmDialog } from 'vant'
 
 const router = useRouter()
 const userStore = useUserStore()
 
 const userInfo = ref<any>(null)
 const profile = ref<any>(null)
+const assessmentStatus = ref({
+  enneagram: false,
+  attachment: false,
+  happiness: false
+})
 
 onMounted(async () => {
   try {
     userInfo.value = userStore.userInfo
     if (userInfo.value?.id) {
+      // 加载用户档案
       profile.value = await getUserProfile(userInfo.value.id)
+      
+      // 加载测评状态
+      const res = await getLatestResults(userInfo.value.id)
+      // 响应拦截器已经返回了 response.data
+      if (res) {
+        assessmentStatus.value = {
+          enneagram: !!res.enneagram,
+          attachment: !!res.attachment,
+          happiness: !!res.happiness
+        }
+      }
     }
   } catch (error) {
-    showToast.fail('加载用户信息失败')
+    showToast('加载用户信息失败')
   }
 })
 
 function goToTest(type: string) {
-  showToast('测评功能将在第二阶段开发')
+  router.push(`/assessment/${type}`)
 }
 
 async function handleLogout() {
@@ -81,14 +106,14 @@ async function handleLogout() {
     message: '确定要退出登录吗？',
   })
   userStore.logout()
-  router.push('/login')
+  router.push('/')
 }
 </script>
 
 <style scoped>
 .profile {
   min-height: 100vh;
-  background-color: #f7f8fa;
+  background-color: #fff9fb;
   padding-bottom: 20px;
 }
 
@@ -98,6 +123,28 @@ async function handleLogout() {
 
 .actions {
   padding: 16px;
+}
+
+/* 自定义按钮样式 */
+:deep(.van-button--danger) {
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+  border: none;
+  color: #5d4037;
+  font-weight: 500;
+}
+
+/* 自定义 NavBar 样式 */
+:deep(.van-nav-bar) {
+  background: linear-gradient(135deg, #ffb7c5 0%, #ffdde1 100%);
+}
+
+:deep(.van-nav-bar__title) {
+  color: #5d4037;
+  font-weight: 600;
+}
+
+:deep(.van-nav-bar .van-icon) {
+  color: #5d4037;
 }
 </style>
 

@@ -61,9 +61,9 @@ async function onSubmit() {
     await userStore.loginUser(form.value)
     showToast('登录成功')
     
-    // 立即跳转到之前的页面或首页
+    // 立即跳转到之前的页面或测评中心
     const redirect = route.query.redirect as string
-    router.push(redirect || '/')
+    router.push(redirect || '/assessment')
   } catch (error: any) {
     const errorMsg = error.response?.data?.message || error.message || '登录失败'
     showToast(errorMsg)
@@ -81,12 +81,22 @@ function goToRegister() {
 .login {
   min-height: 100vh;
   padding: 40px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #fff0f5 0%, #fff9fb 100%); /* 极浅粉背景 */
+}
+
+.header h1, .header p {
+  color: #5d4037; /* 深暖色文字 */
+}
+
+/* 按钮样式需要在全局或深度选择器中覆盖 */
+:deep(.van-button--primary) {
+  background: linear-gradient(135deg, #ffb7c5 0%, #ffdde1 100%);
+  border: none;
+  color: #5d4037;
 }
 
 .header {
   text-align: center;
-  color: white;
   margin-bottom: 40px;
 }
 
