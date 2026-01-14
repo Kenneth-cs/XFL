@@ -3,19 +3,43 @@ import { StoreService } from './store.service';
 import { Roles, Public } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards';
 import { SysUserRole } from '../../entities/sys-user.entity';
-import { IsNotEmpty, IsString, IsOptional, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsNumber, Min, Max } from 'class-validator';
+import { MV_TEMPLATES } from '../../constants/mv-template.constant';
 
 class CreateStoreDto {
   @IsNotEmpty({ message: '门店名称不能为空' })
   @IsString()
   name: string;
 
-  @IsOptional()
+  @IsNotEmpty({ message: 'MV计算方案不能为空' })
   @IsNumber()
-  mvTemplateId?: number;
+  @Min(1, { message: 'MV方案ID必须在1-5之间' })
+  @Max(5, { message: 'MV方案ID必须在1-5之间' })
+  mvTemplateId: number;
 
   @IsOptional()
-  regionInfo?: any;
+  @IsString()
+  businessLicenseName?: string;
+
+  @IsOptional()
+  @IsString()
+  creditCode?: string;
+
+  @IsOptional()
+  @IsString()
+  province?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  district?: string;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
 
   @IsOptional()
   @IsString()
@@ -24,6 +48,16 @@ class CreateStoreDto {
   @IsOptional()
   @IsString()
   contactPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  contractNumber?: string;
+
+  @IsOptional()
+  contractStartDate?: string;
+
+  @IsOptional()
+  contractEndDate?: string;
 }
 
 class UpdateStoreDto {
@@ -33,10 +67,33 @@ class UpdateStoreDto {
 
   @IsOptional()
   @IsNumber()
+  @Min(1, { message: 'MV方案ID必须在1-5之间' })
+  @Max(5, { message: 'MV方案ID必须在1-5之间' })
   mvTemplateId?: number;
 
   @IsOptional()
-  regionInfo?: any;
+  @IsString()
+  businessLicenseName?: string;
+
+  @IsOptional()
+  @IsString()
+  creditCode?: string;
+
+  @IsOptional()
+  @IsString()
+  province?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  district?: string;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
 
   @IsOptional()
   @IsString()
@@ -45,6 +102,16 @@ class UpdateStoreDto {
   @IsOptional()
   @IsString()
   contactPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  contractNumber?: string;
+
+  @IsOptional()
+  contractStartDate?: string;
+
+  @IsOptional()
+  contractEndDate?: string;
 }
 
 @Controller('stores')
@@ -59,6 +126,16 @@ export class StoreController {
   @Roles(SysUserRole.SUPER_ADMIN)
   async create(@Body() createStoreDto: CreateStoreDto) {
     return await this.storeService.create(createStoreDto);
+  }
+
+  /**
+   * 获取MV方案列表（公开接口，供前端下拉选择）
+   * 注意：必须放在 :id 路由之前，否则会被 :id 拦截
+   */
+  @Public()
+  @Get('mv-templates/list')
+  async getMvTemplates() {
+    return MV_TEMPLATES;
   }
 
   /**
@@ -105,7 +182,7 @@ export class StoreController {
   }
 
   /**
-   * 删除门店
+   * 删除门店（软删除）
    */
   @Delete(':id')
   @Roles(SysUserRole.SUPER_ADMIN)

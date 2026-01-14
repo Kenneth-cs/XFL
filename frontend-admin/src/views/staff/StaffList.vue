@@ -41,10 +41,16 @@
         
         <template v-if="column.key === 'actions'">
           <a-space>
-            <a-button type="link" size="small" @click="handleEditRole(record)">
+            <a-button 
+              v-if="canEditRole(record)"
+              type="link" 
+              size="small" 
+              @click="handleEditRole(record)"
+            >
               修改角色
             </a-button>
             <a-button 
+              v-if="canEditRole(record)"
               type="link" 
               size="small"
               :danger="record.status === 1"
@@ -52,9 +58,17 @@
             >
               {{ record.status === 1 ? '禁用' : '启用' }}
             </a-button>
-            <a-button type="link" size="small" @click="handleResetPassword(record)">
+            <a-button 
+              v-if="isSuperAdmin"
+              type="link" 
+              size="small" 
+              @click="handleResetPassword(record)"
+            >
               重置密码
             </a-button>
+            <span v-if="!canEditRole(record) && !isSuperAdmin" style="color: #999;">
+              无操作权限
+            </span>
           </a-space>
         </template>
       </template>
@@ -75,9 +89,13 @@
         </a-form-item>
         <a-form-item label="新角色">
           <a-select v-model:value="newRole" style="width: 100%">
-            <a-select-option value="matchmaker">普通红娘</a-select-option>
-            <a-select-option value="manager">门店负责人</a-select-option>
-            <a-select-option value="admin">门店老板</a-select-option>
+            <a-select-option 
+              v-for="role in getAvailableRoles()" 
+              :key="role.value" 
+              :value="role.value"
+            >
+              {{ role.label }}
+            </a-select-option>
           </a-select>
         </a-form-item>
       </a-form>
@@ -86,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { message, Modal } from 'ant-design-vue';
 import axios from 'axios';
 
@@ -107,6 +125,66 @@ const selectedUser = ref<StaffUser | null>(null);
 const newRole = ref('');
 const filterRole = ref();
 const filterStatus = ref();
+
+// 获取当前登录用户信息
+const currentUser = computed(() => {
+  const userStr = localStorage.getItem('admin_user');
+  if (userStr) {
+    try {
+      return JSON.parse(userStr);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+});
+
+// 判断当前用户是否为超级管理员
+const isSuperAdmin = computed(() => currentUser.value?.role === 'super_admin');
+
+// 判断是否可以修改目标用户的角色
+const canEditRole = (targetUser: StaffUser) => {
+  if (!currentUser.value) return false;
+  
+  // 不能修改自己
+  if (targetUser.id === currentUser.value.id) return false;
+  
+  // 超级管理员可以修改任何人（除了自己）
+  if (isSuperAdmin.value) return true;
+  
+  // 门店老板只能修改本门店的负责人和红娘
+  if (currentUser.value.role === 'admin') {
+    // 必须是同一门店
+    if (targetUser.storeId !== currentUser.value.storeId) return false;
+    
+    // 不能修改超级管理员和其他门店老板
+    if (targetUser.role === 'super_admin' || targetUser.role === 'admin') return false;
+    
+    return true;
+  }
+  
+  // 负责人和红娘没有权限
+  return false;
+};
+
+// 获取可选择的角色列表（根据当前用户权限）
+const getAvailableRoles = () => {
+  if (isSuperAdmin.value) {
+    // 超级管理员可以设置门店老板、负责人、红娘（不包括超级管理员，超级管理员只有一个预设账号）
+    return [
+      { value: 'matchmaker', label: '普通红娘' },
+      { value: 'manager', label: '门店负责人' },
+      { value: 'admin', label: '门店老板' }
+    ];
+  } else if (currentUser.value?.role === 'admin') {
+    // 门店老板只能设置负责人和红娘
+    return [
+      { value: 'matchmaker', label: '普通红娘' },
+      { value: 'manager', label: '门店负责人' }
+    ];
+  }
+  return [];
+};
 
 const columns = [
   { title: '用户ID', dataIndex: 'id', key: 'id', width: 150 },

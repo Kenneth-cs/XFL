@@ -94,7 +94,7 @@ const isManager = computed(() => userInfo.role === 'manager' || isAdmin.value);
 
 // 菜单权限
 const canManageStaff = computed(() => isAdmin.value); // 只有超管和老板能管理后台人员
-const canMatch = computed(() => isManager.value); // 经理及以上能发起匹配
+const canMatch = computed(() => true); // 所有后台角色（包括红娘）都能发起匹配
 
 // 面包屑导航
 const currentModule = computed(() => {

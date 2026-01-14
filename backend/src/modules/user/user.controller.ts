@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Public, Roles, CurrentUser, CurrentUserData } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards';
 import { SysUserRole } from '../../entities/sys-user.entity';
-import { IsNotEmpty, IsString, IsOptional, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsNumber, IsBoolean, Matches, Length } from 'class-validator';
 
 class RegisterAppUserDto {
   @IsNotEmpty({ message: '手机号不能为空' })
@@ -55,6 +55,47 @@ class RegisterAppUserDto {
   avatarUrl?: string;
 }
 
+class RegisterSysUserDto {
+  @IsNotEmpty({ message: '用户名不能为空' })
+  @IsString()
+  @Length(3, 20, { message: '用户名长度为 3-20 个字符' })
+  username: string;
+
+  @IsNotEmpty({ message: '密码不能为空' })
+  @IsString()
+  @Length(6, 20, { message: '密码长度为 6-20 个字符' })
+  password: string;
+
+  @IsNotEmpty({ message: '真实姓名不能为空' })
+  @IsString()
+  @Length(2, 20, { message: '姓名长度为 2-20 个字符' })
+  name: string;
+
+  @IsNotEmpty({ message: '身份证号不能为空' })
+  @IsString()
+  @Matches(/^[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$/, {
+    message: '身份证号格式不正确'
+  })
+  idCard: string;
+
+  @IsNotEmpty({ message: '手机号不能为空' })
+  @IsString()
+  @Matches(/^1[3-9]\d{9}$/, { message: '手机号格式不正确' })
+  phone: string;
+
+  @IsNotEmpty({ message: '所属门店不能为空' })
+  @IsString()
+  storeId: string;
+
+  @IsNotEmpty({ message: '申请角色不能为空' })
+  @IsString()
+  role: SysUserRole;
+
+  @IsNotEmpty({ message: '必须同意用户协议' })
+  @IsBoolean()
+  agreeToTerms: boolean;
+}
+
 class CreateSysUserDto {
   @IsNotEmpty({ message: '用户名不能为空' })
   @IsString()
@@ -95,7 +136,10 @@ export class UserController {
    */
   @Public()
   @Post('register/sys')
-  async registerSysUser(@Body() registerDto: CreateSysUserDto) {
+  async registerSysUser(@Body() registerDto: RegisterSysUserDto) {
+    if (!registerDto.agreeToTerms) {
+      throw new BadRequestException('必须同意用户协议才能注册');
+    }
     return await this.userService.registerSysUser(registerDto);
   }
 
@@ -141,8 +185,9 @@ export class UserController {
   async approveSysUser(
     @Param('id') id: string,
     @Body('approve') approve: boolean,
+    @CurrentUser() currentUser: CurrentUserData,
   ) {
-    return await this.userService.approveSysUser(id, approve);
+    return await this.userService.approveSysUser(id, approve, currentUser);
   }
 
   /**
@@ -154,8 +199,9 @@ export class UserController {
   async updateSysUserStatus(
     @Param('id') id: string,
     @Body('status') status: number,
+    @CurrentUser() currentUser: CurrentUserData,
   ) {
-    return await this.userService.updateSysUserStatus(id, status);
+    return await this.userService.updateSysUserStatus(id, status, currentUser);
   }
 
   /**
@@ -167,8 +213,9 @@ export class UserController {
   async updateSysUserRole(
     @Param('id') id: string,
     @Body('role') role: SysUserRole,
+    @CurrentUser() currentUser: CurrentUserData,
   ) {
-    return await this.userService.updateSysUserRole(id, role);
+    return await this.userService.updateSysUserRole(id, role, currentUser);
   }
 
   /**
@@ -201,15 +248,21 @@ export class UserController {
     const page = pageParam ? parseInt(pageParam, 10) : 1;
     const limit = limitParam ? parseInt(limitParam, 10) : 20;
     
-    return await this.userService.findAllAppUsers(targetStoreId, page, limit);
+    // 传递当前用户信息，用于手机号脱敏判断
+    return await this.userService.findAllAppUsers(targetStoreId, page, limit, user);
   }
 
   /**
    * 获取用户档案
    */
   @Get('profile/:userId')
-  async getUserProfile(@Param('userId') userId: string) {
-    return await this.userService.getUserProfile(userId);
+  @UseGuards(RolesGuard)
+  async getUserProfile(
+    @Param('userId') userId: string,
+    @CurrentUser() currentUser: CurrentUserData,
+  ) {
+    // 传递当前用户信息，用于手机号脱敏判断
+    return await this.userService.getUserProfile(userId, currentUser);
   }
 
   /**
@@ -217,12 +270,14 @@ export class UserController {
    */
   @Patch('profile/:userId')
   @UseGuards(RolesGuard)
-  @Roles(SysUserRole.ADMIN, SysUserRole.MANAGER, SysUserRole.MATCHMAKER)
+  @Roles(SysUserRole.SUPER_ADMIN, SysUserRole.ADMIN, SysUserRole.MANAGER, SysUserRole.MATCHMAKER)
   async updateUserProfile(
     @Param('userId') userId: string,
     @Body() updateDto: any,
+    @CurrentUser() currentUser: CurrentUserData,
   ) {
-    return await this.userService.updateUserProfile(userId, updateDto);
+    // 传递当前用户信息，用于权限校验（如分配服务红娘）
+    return await this.userService.updateUserProfile(userId, updateDto, currentUser);
   }
 }
 

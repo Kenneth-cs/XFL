@@ -17,8 +17,14 @@ export class SysUser {
   @Column({ name: 'store_id', type: 'char', length: 6, nullable: true, comment: '所属门店ID (超级管理员为NULL)' })
   storeId: string;
 
-  @Column({ type: 'varchar', length: 50, comment: '登录账号/姓名' })
+  @Column({ type: 'varchar', length: 50, comment: '登录账号' })
   username: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: true, comment: '真实姓名' })
+  name: string;
+
+  @Column({ name: 'id_card', type: 'varchar', length: 18, nullable: true, comment: '身份证号' })
+  idCard: string;
 
   @Exclude()
   @Column({ type: 'varchar', length: 100, comment: '加密密码' })
