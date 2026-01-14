@@ -14,13 +14,8 @@ INSERT INTO `sys_store` (`id`, `name`, `mv_template_id`, `status`) VALUES
 ('XFL001', '总部测试门店', 3, 1);
 
 -- 创建超级管理员账号
--- 密码: admin123 (BCrypt加密后的值，实际使用时需要通过代码生成)
+-- 用户名: super_admin
+-- 密码: admin654321
 INSERT INTO `sys_user` (`id`, `store_id`, `username`, `password`, `role`, `status`) VALUES
-('SUPER_ADMIN', 'XFL001', 'admin', '$2b$10$YourBcryptHashHere', 'super_admin', 1);
-
--- 注意：上面的密码哈希值是示例，实际部署时需要使用真实的BCrypt哈希
--- 可以使用以下Node.js代码生成:
--- const bcrypt = require('bcrypt');
--- const hash = await bcrypt.hash('admin123', 10);
--- console.log(hash);
+('SUPER_ADMIN', NULL, 'super_admin', '$2b$10$W0Da0AiFJf28oh4o4el.xOHBNeGIUkOsKBi.RRCszfFFrECigq6ji', 'super_admin', 1);
 

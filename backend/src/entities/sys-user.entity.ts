@@ -14,7 +14,7 @@ export class SysUser {
   @PrimaryColumn({ type: 'varchar', length: 20, comment: '后台用户ID' })
   id: string;
 
-  @Column({ name: 'store_id', type: 'char', length: 6, comment: '所属门店ID' })
+  @Column({ name: 'store_id', type: 'char', length: 6, nullable: true, comment: '所属门店ID (超级管理员为NULL)' })
   storeId: string;
 
   @Column({ type: 'varchar', length: 50, comment: '登录账号/姓名' })

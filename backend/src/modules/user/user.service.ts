@@ -62,6 +62,83 @@ export class UserService {
   }
 
   /**
+   * 后台用户自助注册（无需权限，状态为待审核）
+   */
+  async registerSysUser(registerDto: any) {
+    // 检查用户名是否已存在
+    const existingUser = await this.sysUserRepository.findOne({
+      where: { username: registerDto.username },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('用户名已存在');
+    }
+
+    // 检查手机号
+    if (registerDto.phone) {
+      const existingPhone = await this.sysUserRepository.findOne({
+        where: { phone: registerDto.phone },
+      });
+
+      if (existingPhone) {
+        throw new BadRequestException('手机号已被注册');
+      }
+    }
+
+    // 生成用户ID
+    const userId = await this.idGeneratorService.generateSysUserId(registerDto.storeId);
+
+    // 加密密码
+    const hashedPassword = await this.authService.hashPassword(registerDto.password);
+
+    const user = this.sysUserRepository.create({
+      id: userId,
+      ...registerDto,
+      password: hashedPassword,
+      status: 0, // 默认为待审核
+    });
+
+    return await this.sysUserRepository.save(user);
+  }
+
+  /**
+   * 更新后台用户状态（禁用/启用）
+   */
+  async updateSysUserStatus(id: string, status: number) {
+    const user = await this.sysUserRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    user.status = status;
+    return await this.sysUserRepository.save(user);
+  }
+
+  /**
+   * 更新后台用户角色
+   */
+  async updateSysUserRole(id: string, role: SysUserRole) {
+    const user = await this.sysUserRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    user.role = role;
+    return await this.sysUserRepository.save(user);
+  }
+
+  /**
+   * 重置后台用户密码
+   */
+  async resetSysUserPassword(id: string) {
+    const user = await this.sysUserRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    // 默认重置为 123456
+    user.password = await this.authService.hashPassword('123456');
+    return await this.sysUserRepository.save(user);
+  }
+
+  /**
    * 获取后台用户列表
    */
   async findAllSysUsers(storeId?: string, role?: SysUserRole, status?: number) {
@@ -146,11 +223,19 @@ export class UserService {
   }
 
   /**
-   * 获取前台用户列表（按门店隔离）
+   * 获取前台用户列表（支持超级管理员跨店查询）
+   * @param storeId 如果为 undefined，则查询所有门店（仅限超级管理员场景）
    */
-  async findAllAppUsers(storeId: string, page = 1, limit = 20) {
+  async findAllAppUsers(storeId?: string, page = 1, limit = 20) {
+    const where: any = {};
+    // 只有当 storeId 存在时才添加过滤条件
+    // 配合 Controller 层的逻辑：非超管必须传 storeId，超管可不传
+    if (storeId) {
+      where.storeId = storeId;
+    }
+
     const [users, total] = await this.appUserRepository.findAndCount({
-      where: { storeId },
+      where,
       skip: (page - 1) * limit,
       take: limit,
       order: { createdAt: 'DESC' },

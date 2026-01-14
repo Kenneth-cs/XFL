@@ -91,6 +91,15 @@ export class UserController {
   }
 
   /**
+   * 后台用户自助注册（公开接口）
+   */
+  @Public()
+  @Post('register/sys')
+  async registerSysUser(@Body() registerDto: CreateSysUserDto) {
+    return await this.userService.registerSysUser(registerDto);
+  }
+
+  /**
    * 创建后台用户
    */
   @Post('sys')
@@ -107,11 +116,17 @@ export class UserController {
   @UseGuards(RolesGuard)
   @Roles(SysUserRole.SUPER_ADMIN, SysUserRole.ADMIN, SysUserRole.MANAGER)
   async findAllSysUsers(
-    @Query('storeId') storeId?: string,
+    @CurrentUser() user: CurrentUserData,
+    @Query('storeId') queryStoreId?: string,
     @Query('role') role?: SysUserRole,
     @Query('status') status?: number,
   ) {
-    return await this.userService.findAllSysUsers(storeId, role, status);
+    // 权限控制：超级管理员可查任意门店（或所有），其他人强制查本门店
+    const targetStoreId = user.role === SysUserRole.SUPER_ADMIN 
+      ? queryStoreId 
+      : user.storeId;
+      
+    return await this.userService.findAllSysUsers(targetStoreId, role, status);
   }
 
   /**
@@ -128,6 +143,42 @@ export class UserController {
   }
 
   /**
+   * 更新后台用户状态
+   */
+  @Patch('sys/:id/status')
+  @UseGuards(RolesGuard)
+  @Roles(SysUserRole.SUPER_ADMIN, SysUserRole.ADMIN)
+  async updateSysUserStatus(
+    @Param('id') id: string,
+    @Body('status') status: number,
+  ) {
+    return await this.userService.updateSysUserStatus(id, status);
+  }
+
+  /**
+   * 更新后台用户角色
+   */
+  @Patch('sys/:id/role')
+  @UseGuards(RolesGuard)
+  @Roles(SysUserRole.SUPER_ADMIN, SysUserRole.ADMIN)
+  async updateSysUserRole(
+    @Param('id') id: string,
+    @Body('role') role: SysUserRole,
+  ) {
+    return await this.userService.updateSysUserRole(id, role);
+  }
+
+  /**
+   * 重置后台用户密码
+   */
+  @Patch('sys/:id/reset-password')
+  @UseGuards(RolesGuard)
+  @Roles(SysUserRole.SUPER_ADMIN)
+  async resetSysUserPassword(@Param('id') id: string) {
+    return await this.userService.resetSysUserPassword(id);
+  }
+
+  /**
    * 获取前台用户列表
    */
   @Get('app')
@@ -136,13 +187,14 @@ export class UserController {
     @CurrentUser() user: CurrentUserData,
     @Query('page') page = 1,
     @Query('limit') limit = 20,
+    @Query('storeId') queryStoreId?: string,
   ) {
-    // 非超级管理员只能看自己门店的用户
-    const storeId = user.role === SysUserRole.SUPER_ADMIN 
-      ? undefined 
+    // 权限控制：超级管理员可查任意门店（或所有），其他人强制查本门店
+    const targetStoreId = user.role === SysUserRole.SUPER_ADMIN 
+      ? queryStoreId 
       : user.storeId;
     
-    return await this.userService.findAllAppUsers(storeId || user.storeId, page, limit);
+    return await this.userService.findAllAppUsers(targetStoreId, page, limit);
   }
 
   /**

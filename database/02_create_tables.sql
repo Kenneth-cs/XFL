@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `sys_store` (
 -- 2. 后台用户表
 CREATE TABLE IF NOT EXISTS `sys_user` (
   `id` VARCHAR(20) NOT NULL COMMENT '后台用户ID (如: XFL001G13702)',
-  `store_id` CHAR(6) NOT NULL COMMENT '所属门店ID',
+  `store_id` CHAR(6) NULL COMMENT '所属门店ID (超级管理员可为空)',
   `username` VARCHAR(50) NOT NULL COMMENT '登录账号/姓名',
   `password` VARCHAR(100) NOT NULL COMMENT '加密密码 (BCrypt)',
   `phone` VARCHAR(20) NULL COMMENT '手机号',
