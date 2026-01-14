@@ -95,7 +95,7 @@ const onFinish = async (values: any) => {
   loading.value = true;
   try {
     // 调用后端登录接口
-    const res = await axios.post('/api/v1/auth/login/sys', values);
+    const res = await axios.post('/auth/login/sys', values);
     localStorage.setItem('admin_token', res.data.accessToken);
     localStorage.setItem('admin_user', JSON.stringify(res.data.user));
     message.success('登录成功');
@@ -118,7 +118,7 @@ const showRegisterModal = () => {
 const handleRegister = async () => {
   registerLoading.value = true;
   try {
-    await axios.post('/api/v1/users/register/sys', registerForm);
+    await axios.post('/users/register/sys', registerForm);
     message.success('注册申请已提交，请等待审核');
     registerVisible.value = false;
   } catch (error: any) {

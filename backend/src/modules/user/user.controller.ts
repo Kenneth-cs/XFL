@@ -119,12 +119,15 @@ export class UserController {
     @CurrentUser() user: CurrentUserData,
     @Query('storeId') queryStoreId?: string,
     @Query('role') role?: SysUserRole,
-    @Query('status') status?: number,
+    @Query('status') statusParam?: string,
   ) {
     // 权限控制：超级管理员可查任意门店（或所有），其他人强制查本门店
     const targetStoreId = user.role === SysUserRole.SUPER_ADMIN 
       ? queryStoreId 
       : user.storeId;
+    
+    // 转换 status 参数为数字
+    const status = statusParam !== undefined ? parseInt(statusParam, 10) : undefined;
       
     return await this.userService.findAllSysUsers(targetStoreId, role, status);
   }
@@ -185,14 +188,18 @@ export class UserController {
   @UseGuards(RolesGuard)
   async findAllAppUsers(
     @CurrentUser() user: CurrentUserData,
-    @Query('page') page = 1,
-    @Query('limit') limit = 20,
+    @Query('page') pageParam?: string,
+    @Query('limit') limitParam?: string,
     @Query('storeId') queryStoreId?: string,
   ) {
     // 权限控制：超级管理员可查任意门店（或所有），其他人强制查本门店
     const targetStoreId = user.role === SysUserRole.SUPER_ADMIN 
       ? queryStoreId 
       : user.storeId;
+    
+    // 转换分页参数为数字
+    const page = pageParam ? parseInt(pageParam, 10) : 1;
+    const limit = limitParam ? parseInt(limitParam, 10) : 20;
     
     return await this.userService.findAllAppUsers(targetStoreId, page, limit);
   }
