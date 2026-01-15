@@ -17,7 +17,7 @@ export interface AttachmentResult {
   anxietyScore: number;  // 焦虑得分 (A)
   avoidanceScore: number; // 回避得分 (B)
   securityScore: number;  // 安全感得分 (C)
-  type: '安全型' | '焦虑型' | '回避型' | '紊乱型' | '待进一步沟通';
+  type: '安全型' | '焦虑型' | '回避型' | '紊乱型' | '得分不足，待进一步沟通';
   typeLabel: string;
   description: string;
 }

@@ -511,15 +511,138 @@
               </a-card>
               <a-alert v-else message="暂无九型人格测评数据" type="info" show-icon class="mb-4" />
 
-              <!-- 依恋关系结果 -->
-              <a-descriptions bordered column="1" class="mb-3" :labelStyle="{ width: '200px' }">
-                <a-descriptions-item label="依恋关系结果">
-                  <div v-if="assessmentResults.attachment">
-                    {{ getAttachmentSummary(assessmentResults.attachment) }}
-                  </div>
-                  <div v-else class="text-gray-400">暂无数据</div>
-                </a-descriptions-item>
-              </a-descriptions>
+              <!-- 依恋关系详细结果 -->
+              <a-card type="inner" title="依恋关系测评结果" class="mb-4" v-if="assessmentResults.attachment">
+                <a-descriptions bordered size="small" :column="1" :labelStyle="{ width: '200px' }">
+                  <!-- 依恋类型 -->
+                  <a-descriptions-item label="依恋类型">
+                    <div v-if="assessmentResults.attachment.resultData?.type === '得分不足'">
+                      <a-alert 
+                        message="得分不足" 
+                        description="三个维度得分都低于5分，无法给出具体的依恋类型" 
+                        type="warning" 
+                        show-icon 
+                      />
+                    </div>
+                    <div v-else-if="attachmentDetailInfo">
+                      <a-tag :color="attachmentDetailInfo.color" style="font-size: 14px; padding: 4px 12px;">
+                        {{ attachmentDetailInfo.fullName }}
+                      </a-tag>
+                      <a-tag color="purple" style="margin-left: 8px;">
+                        {{ attachmentDetailInfo.label }}
+                      </a-tag>
+                      <div style="margin-top: 8px; color: #666;">
+                        维度组合：{{ attachmentDetailInfo.dimensions }}
+                      </div>
+                    </div>
+                    <div v-else>
+                      {{ assessmentResults.attachment.resultData?.type || '暂无数据' }}
+                    </div>
+                  </a-descriptions-item>
+
+                  <!-- 三维度得分 -->
+                  <a-descriptions-item label="三维度得分详情">
+                    <div v-if="assessmentResults.attachment.resultData" style="display: flex; flex-direction: column; gap: 12px;">
+                      <!-- 焦虑维度 -->
+                      <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                          <span style="font-weight: 500;">
+                            <a-tag color="orange">A</a-tag> 焦虑维度（Anxiety）
+                          </span>
+                          <span style="font-weight: bold; color: #fa8c16;">
+                            {{ assessmentResults.attachment.resultData.anxietyScore || 0 }}/12 分
+                          </span>
+                        </div>
+                        <a-progress 
+                          :percent="((assessmentResults.attachment.resultData.anxietyScore || 0) / 12) * 100" 
+                          :show-info="false"
+                          stroke-color="#fa8c16"
+                        />
+                        <div style="margin-top: 4px; font-size: 12px; color: #999;">
+                          {{ getDimensionDescription('A', assessmentResults.attachment.resultData.anxietyScore || 0) }}
+                        </div>
+                      </div>
+
+                      <!-- 回避维度 -->
+                      <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                          <span style="font-weight: 500;">
+                            <a-tag color="blue">B</a-tag> 回避维度（Avoidance）
+                          </span>
+                          <span style="font-weight: bold; color: #1890ff;">
+                            {{ assessmentResults.attachment.resultData.avoidanceScore || 0 }}/12 分
+                          </span>
+                        </div>
+                        <a-progress 
+                          :percent="((assessmentResults.attachment.resultData.avoidanceScore || 0) / 12) * 100" 
+                          :show-info="false"
+                          stroke-color="#1890ff"
+                        />
+                        <div style="margin-top: 4px; font-size: 12px; color: #999;">
+                          {{ getDimensionDescription('B', assessmentResults.attachment.resultData.avoidanceScore || 0) }}
+                        </div>
+                      </div>
+
+                      <!-- 安全感维度 -->
+                      <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                          <span style="font-weight: 500;">
+                            <a-tag color="green">C</a-tag> 安全感维度（Security）
+                          </span>
+                          <span style="font-weight: bold; color: #52c41a;">
+                            {{ assessmentResults.attachment.resultData.securityScore || 0 }}/12 分
+                          </span>
+                        </div>
+                        <a-progress 
+                          :percent="((assessmentResults.attachment.resultData.securityScore || 0) / 12) * 100" 
+                          :show-info="false"
+                          stroke-color="#52c41a"
+                        />
+                        <div style="margin-top: 4px; font-size: 12px; color: #999;">
+                          {{ getDimensionDescription('C', assessmentResults.attachment.resultData.securityScore || 0) }}
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else class="text-gray-400">暂无数据</div>
+                  </a-descriptions-item>
+
+                  <!-- 核心特质 -->
+                  <a-descriptions-item 
+                    label="核心特质" 
+                    v-if="attachmentDetailInfo && assessmentResults.attachment.resultData?.type !== '得分不足'"
+                  >
+                    <div style="line-height: 1.8; color: #333;">
+                      {{ attachmentDetailInfo.coreTraits }}
+                    </div>
+                  </a-descriptions-item>
+
+                  <!-- 典型行为表现 -->
+                  <a-descriptions-item 
+                    label="典型行为表现" 
+                    v-if="attachmentDetailInfo && assessmentResults.attachment.resultData?.type !== '得分不足'"
+                  >
+                    <ul style="margin: 0; padding-left: 20px; line-height: 2;">
+                      <li v-for="(behavior, index) in attachmentDetailInfo.behaviors" :key="index">
+                        {{ behavior }}
+                      </li>
+                    </ul>
+                  </a-descriptions-item>
+
+                  <!-- 相处优势/核心痛点 -->
+                  <a-descriptions-item 
+                    :label="attachmentDetailInfo?.advantage ? '相处优势' : '核心痛点'" 
+                    v-if="attachmentDetailInfo && (attachmentDetailInfo.advantage || attachmentDetailInfo.painPoint) && assessmentResults.attachment.resultData?.type !== '得分不足'"
+                  >
+                    <a-alert 
+                      :type="attachmentDetailInfo.advantage ? 'success' : 'warning'"
+                      :message="attachmentDetailInfo.advantage || attachmentDetailInfo.painPoint"
+                      show-icon
+                      style="line-height: 1.8;"
+                    />
+                  </a-descriptions-item>
+                </a-descriptions>
+              </a-card>
+              <a-alert v-else message="暂无依恋关系测评数据" type="info" show-icon class="mb-4" />
 
               <!-- 幸福力结果 -->
               <a-descriptions bordered column="1" class="mb-3" :labelStyle="{ width: '200px' }">
@@ -572,6 +695,7 @@ import { QuestionCircleOutlined } from '@ant-design/icons-vue';
 import axios from 'axios';
 import * as options from '../../constants/member-options';
 import { calculateEnneagramMatch, ENNEAGRAM_LABELS, type EnneagramMatchResult } from '../../utils/enneagram-match';
+import { getAttachmentTypeInfo, getDimensionDescription } from '../../utils/attachment-info';
 
 const route = useRoute();
 const router = useRouter();
@@ -664,6 +788,32 @@ const enneagramMatchData = computed<EnneagramMatchResult | null>(() => {
 // 计算异性性别
 const oppositeGender = computed(() => {
   return formState.baseInfo?.gender === '男' ? '女' : '男';
+});
+
+// 获取依恋关系详细信息
+const attachmentDetailInfo = computed(() => {
+  if (!assessmentResults.attachment?.resultData?.type) {
+    return null;
+  }
+  
+  const type = assessmentResults.attachment.resultData.type;
+  const typeInfo = getAttachmentTypeInfo(type);
+  
+  if (!typeInfo) {
+    return null;
+  }
+  
+  // 获取三维度得分
+  const scores = {
+    anxiety: assessmentResults.attachment.resultData.anxietyScore || 0,
+    avoidance: assessmentResults.attachment.resultData.avoidanceScore || 0,
+    security: assessmentResults.attachment.resultData.securityScore || 0,
+  };
+  
+  return {
+    ...typeInfo,
+    scores,
+  };
 });
 
 // 获取详情

@@ -7,9 +7,18 @@
 
     <div class="result-content" v-if="result">
       <!-- 依恋类型卡片 -->
-      <div class="type-card" :class="`type-${getTypeClass(result.type)}`">
+      <div v-if="result.type === '得分不足'" class="type-card type-insufficient">
         <p class="intro-text">您在《幸福力婚恋关系测试》中显示是：</p>
-        <div v-if="result.type && !result.type.includes('待进一步')" class="type-badge">{{ result.type }}</div>
+        <div class="insufficient-notice">
+          <van-icon name="info-o" size="24" color="#fa8c16" />
+          <h3 class="insufficient-title">得分不足</h3>
+          <p class="insufficient-desc">三个维度得分都低于5分，无法给出具体的依恋类型</p>
+          <p class="insufficient-tip">请查看下方三维度得分详情，或联系您的专属红娘老师进行深入沟通</p>
+        </div>
+      </div>
+      <div v-else class="type-card" :class="`type-${getTypeClass(result.type)}`">
+        <p class="intro-text">您在《幸福力婚恋关系测试》中显示是：</p>
+        <div v-if="result.type && !result.type.includes('待进一步沟通')" class="type-badge">{{ result.type }}</div>
         <h3 v-if="getTypeLabel(result.type)" class="type-label">{{ getTypeLabel(result.type) }}</h3>
         <div class="dimension-combo">
           <span class="combo-text">{{ getDimensionCombo(result) }}</span>
@@ -128,7 +137,7 @@ const getTypeClass = (type: string) => {
 // 类型标签（如"健康核心型"）
 const getTypeLabel = (type: string) => {
   // 过滤掉"待进一步沟通"类型
-  if (type && type.includes('待进一步')) {
+  if (type && type.includes('待进一步沟通')) {
     return ''
   }
   
@@ -278,6 +287,45 @@ onMounted(async () => {
 
 .type-card.type-disorder {
   border-top: 4px solid #fa8c84;
+}
+
+.type-card.type-insufficient {
+  border-top: 4px solid #fa8c16;
+}
+
+.insufficient-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.insufficient-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fa8c16;
+  margin: 0;
+}
+
+.insufficient-desc {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+  text-align: center;
+}
+
+.insufficient-tip {
+  font-size: 13px;
+  color: #999;
+  line-height: 1.5;
+  margin: 0;
+  text-align: center;
+  padding: 12px;
+  background: #fff7e6;
+  border-radius: 8px;
+  width: 100%;
 }
 
 .intro-text {

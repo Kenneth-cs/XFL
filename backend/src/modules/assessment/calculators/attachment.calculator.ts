@@ -7,7 +7,7 @@ export interface AttachmentResult {
   anxietyScore: number; // 焦虑得分 (A)
   avoidanceScore: number; // 回避得分 (B)
   securityScore: number; // 安全感得分 (C)
-  type: '安全型' | '焦虑型' | '回避型' | '紊乱型' | '待进一步沟通';
+  type: '安全型' | '焦虑型' | '回避型' | '紊乱型' | '得分不足';
   typeLabel: string;
   description: string;
 }
@@ -63,21 +63,26 @@ export class AttachmentCalculator {
     let type: AttachmentResult['type'];
 
     if (anxietyScore >= 5 && avoidanceScore >= 5) {
+      // 高焦虑 + 高回避 → 紊乱型
       type = '紊乱型';
     } else if (anxietyScore >= 5) {
+      // 高焦虑 + 低回避 → 焦虑型
       type = '焦虑型';
     } else if (avoidanceScore >= 5) {
+      // 低焦虑 + 高回避 → 回避型
       type = '回避型';
     } else if (securityScore >= 5) {
+      // 高安全感 → 安全型
       type = '安全型';
     } else {
-      type = '待进一步沟通';
+      // 所有得分都低于5分 → 得分不足
+      type = '得分不足';
     }
 
     // 3. 获取类型配置
     const config = ATTACHMENT_TYPE_CONFIG[type] || {
-      typeLabel: '待评估',
-      description: '未达到任何类型判定阈值，请联系红娘老师进行进一步沟通',
+      typeLabel: '得分不足',
+      description: '三个维度得分都低于5分，无法给出具体的依恋类型',
     };
 
     return {

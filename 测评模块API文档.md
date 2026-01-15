@@ -155,9 +155,9 @@ Content-Type: application/json
     "anxietyScore": 2,
     "avoidanceScore": 1,
     "securityScore": 1,
-    "type": "待进一步沟通",
-    "typeLabel": "待评估",
-    "description": "未达到任何类型判定阈值，请联系红娘老师进行进一步沟通"
+    "type": "得分不足",
+    "typeLabel": "得分不足",
+    "description": "三个维度得分都低于5分，无法给出具体的依恋类型"
   }
 }
 ```
