@@ -46,7 +46,16 @@
                   </a-form-item>
                 </a-col>
                 <a-col :span="6">
-                  <a-form-item label="出生日期">
+                  <a-form-item>
+                    <template #label>
+                      出生日期 <span style="color: red;">*</span>
+                      <a-tooltip title="MV值计算必填：用于计算年龄维度">
+                        <QuestionCircleOutlined style="margin-left: 4px; color: #999;" />
+                      </a-tooltip>
+                      <span v-if="formState.mvDetail && formState.mvDetail.age" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
+                        (得分: {{ formState.mvDetail.age.score || 0 }}分)
+                      </span>
+                    </template>
                     <a-date-picker 
                       v-model:value="formState.baseInfo.birthday" 
                       value-format="YYYY-MM-DD" 
@@ -55,12 +64,33 @@
                   </a-form-item>
                 </a-col>
                 <a-col :span="6">
-                  <a-form-item label="身高 (cm)">
+                  <a-form-item>
+                    <template #label>
+                      身高 (cm) <span style="color: red;">*</span>
+                      <a-tooltip :title="formState.baseInfo.gender === '女' ? 'MV值计算必填：用于计算BMI维度' : 'MV值计算必填：身高维度'">
+                        <QuestionCircleOutlined style="margin-left: 4px; color: #999;" />
+                      </a-tooltip>
+                      <span v-if="formState.mvDetail && formState.mvDetail.height && formState.baseInfo.gender === '男'" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
+                        (得分: {{ formState.mvDetail.height.score || 0 }}分)
+                      </span>
+                      <span v-if="formState.mvDetail && formState.mvDetail.bmi && formState.baseInfo.gender === '女'" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
+                        (BMI得分: {{ formState.mvDetail.bmi.score || 0 }}分)
+                      </span>
+                    </template>
                     <a-input-number v-model:value="formState.baseInfo.height" style="width: 100%" />
                   </a-form-item>
                 </a-col>
                 <a-col :span="6">
-                  <a-form-item label="体重 (kg)">
+                  <a-form-item>
+                    <template #label>
+                      体重 (kg) <span v-if="formState.baseInfo.gender === '女'" style="color: red;">*</span>
+                      <a-tooltip v-if="formState.baseInfo.gender === '女'" title="MV值计算必填：用于计算BMI维度">
+                        <QuestionCircleOutlined style="margin-left: 4px; color: #999;" />
+                      </a-tooltip>
+                      <span v-if="formState.mvDetail && formState.mvDetail.bmi && formState.baseInfo.gender === '女'" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
+                        (BMI得分: {{ formState.mvDetail.bmi.score || 0 }}分)
+                      </span>
+                    </template>
                     <a-input-number v-model:value="formState.baseInfo.weight" style="width: 100%" />
                   </a-form-item>
                 </a-col>
@@ -74,7 +104,19 @@
                   </a-form-item>
                 </a-col>
                 <a-col :span="6">
-                  <a-form-item label="学历">
+                  <a-form-item>
+                    <template #label>
+                      学历 <span style="color: red;">*</span>
+                      <a-tooltip :title="formState.baseInfo.gender === '男' ? 'MV值计算必填：智商维度' : 'MV值计算必填：学历维度'">
+                        <QuestionCircleOutlined style="margin-left: 4px; color: #999;" />
+                      </a-tooltip>
+                      <span v-if="formState.mvDetail && formState.mvDetail.intelligence && formState.baseInfo.gender === '男'" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
+                        (智商: {{ formState.mvDetail.intelligence.score || 0 }}分)
+                      </span>
+                      <span v-if="formState.mvDetail && formState.mvDetail.education && formState.baseInfo.gender === '女'" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
+                        (得分: {{ formState.mvDetail.education.score || 0 }}分)
+                      </span>
+                    </template>
                     <a-select v-model:value="formState.baseInfo.education">
                       <a-select-option v-for="opt in options.EDUCATION_OPTIONS" :key="opt" :value="opt">{{ opt }}</a-select-option>
                     </a-select>
@@ -150,7 +192,16 @@
             <a-card title="个人扩展资料" class="mb-4">
               <a-row :gutter="24">
                 <a-col :span="6">
-                  <a-form-item label="长相">
+                  <a-form-item>
+                    <template #label>
+                      长相 <span style="color: red;">*</span>
+                      <a-tooltip title="MV值计算必填：长相维度">
+                        <QuestionCircleOutlined style="margin-left: 4px; color: #999;" />
+                      </a-tooltip>
+                      <span v-if="formState.mvDetail && formState.mvDetail.appearance" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
+                        (得分: {{ formState.mvDetail.appearance.score || 0 }}分)
+                      </span>
+                    </template>
                     <a-select v-model:value="formState.extInfo.appearance">
                       <a-select-option v-for="opt in options.APPEARANCE_OPTIONS" :key="opt" :value="opt">{{ opt }}</a-select-option>
                     </a-select>
@@ -178,7 +229,16 @@
                   </a-form-item>
                 </a-col>
                 <a-col :span="6">
-                  <a-form-item label="罩杯 (女)">
+                  <a-form-item>
+                    <template #label>
+                      罩杯 (女) <span v-if="formState.baseInfo.gender === '女'" style="color: red;">*</span>
+                      <a-tooltip v-if="formState.baseInfo.gender === '女'" title="MV值计算必填：罩杯维度">
+                        <QuestionCircleOutlined style="margin-left: 4px; color: #999;" />
+                      </a-tooltip>
+                      <span v-if="formState.mvDetail && formState.mvDetail.bra_cup && formState.baseInfo.gender === '女'" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
+                        (得分: {{ formState.mvDetail.bra_cup.score || 0 }}分)
+                      </span>
+                    </template>
                     <a-select v-model:value="formState.extInfo.braCup" :disabled="formState.baseInfo.gender === '男'">
                       <a-select-option v-for="opt in options.BRA_CUP_OPTIONS" :key="opt" :value="opt">{{ opt }}</a-select-option>
                     </a-select>
@@ -233,7 +293,16 @@
                   </a-form-item>
                 </a-col>
                 <a-col :span="6">
-                  <a-form-item label="年收入">
+                  <a-form-item>
+                    <template #label>
+                      年收入 <span v-if="formState.baseInfo.gender === '男'" style="color: red;">*</span>
+                      <a-tooltip v-if="formState.baseInfo.gender === '男'" title="MV值计算必填：财富维度">
+                        <QuestionCircleOutlined style="margin-left: 4px; color: #999;" />
+                      </a-tooltip>
+                      <span v-if="formState.mvDetail && formState.mvDetail.wealth && formState.baseInfo.gender === '男'" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
+                        (财富: {{ formState.mvDetail.wealth.score || 0 }}分)
+                      </span>
+                    </template>
                     <a-select v-model:value="formState.extInfo.annualIncome">
                       <a-select-option v-for="opt in options.INCOME_OPTIONS" :key="opt" :value="opt">{{ opt }}</a-select-option>
                     </a-select>
@@ -275,7 +344,16 @@
                   </a-form-item>
                 </a-col>
                 <a-col :span="12">
-                  <a-form-item label="父母情感状况">
+                  <a-form-item>
+                    <template #label>
+                      父母情感状况 <span v-if="formState.baseInfo.gender === '女'" style="color: red;">*</span>
+                      <a-tooltip v-if="formState.baseInfo.gender === '女'" title="MV值计算必填：家庭环境维度">
+                        <QuestionCircleOutlined style="margin-left: 4px; color: #999;" />
+                      </a-tooltip>
+                      <span v-if="formState.mvDetail && formState.mvDetail.family && formState.baseInfo.gender === '女'" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
+                        (家庭: {{ formState.mvDetail.family.score || 0 }}分)
+                      </span>
+                    </template>
                     <a-select v-model:value="formState.extInfo.parentsMaritalStatus">
                       <a-select-option v-for="opt in options.PARENTS_MARITAL_STATUS_OPTIONS" :key="opt" :value="opt">{{ opt }}</a-select-option>
                     </a-select>
@@ -288,14 +366,32 @@
             <a-card title="个人素质与要求" class="mb-4">
               <a-row :gutter="24">
                 <a-col :span="24">
-                  <a-form-item label="情商评分 (多选)">
+                  <a-form-item>
+                    <template #label>
+                      情商评分 (多选) <span v-if="formState.baseInfo.gender === '男'" style="color: red;">*</span>
+                      <a-tooltip v-if="formState.baseInfo.gender === '男'" title="MV值计算必填：情商维度">
+                        <QuestionCircleOutlined style="margin-left: 4px; color: #999;" />
+                      </a-tooltip>
+                      <span v-if="formState.mvDetail && formState.mvDetail.eq && formState.baseInfo.gender === '男'" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
+                        (情商: {{ formState.mvDetail.eq.score || 0 }}分)
+                      </span>
+                    </template>
                     <a-checkbox-group v-model:value="formState.extInfo.eqScore">
                       <a-checkbox v-for="opt in options.EQ_OPTIONS" :key="opt" :value="opt">{{ opt }}</a-checkbox>
                     </a-checkbox-group>
                   </a-form-item>
                 </a-col>
                 <a-col :span="24">
-                  <a-form-item label="长期专一承诺">
+                  <a-form-item>
+                    <template #label>
+                      长期专一承诺 <span v-if="formState.baseInfo.gender === '男'" style="color: red;">*</span>
+                      <a-tooltip v-if="formState.baseInfo.gender === '男'" title="MV值计算必填：长期专一承诺维度">
+                        <QuestionCircleOutlined style="margin-left: 4px; color: #999;" />
+                      </a-tooltip>
+                      <span v-if="formState.mvDetail && formState.mvDetail.commitment && formState.baseInfo.gender === '男'" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
+                        (承诺: {{ formState.mvDetail.commitment.score || 0 }}分)
+                      </span>
+                    </template>
                     <a-radio-group v-model:value="formState.extInfo.commitmentScore">
                       <a-radio v-for="opt in options.COMMITMENT_SCORE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</a-radio>
                     </a-radio-group>
@@ -358,10 +454,11 @@
                 <a-descriptions-item label="MV值 (后台计算)">
                   <div v-if="formState.mvScore">
                     <span class="text-lg font-bold text-red-500">{{ formState.mvScore }}</span> 分
+                    <a-button type="link" size="small" @click="handleCalculateMv" :loading="calculating">重新计算</a-button>
                   </div>
                   <div v-else class="text-gray-400">
                     暂未计算 
-                    <a-button type="link" size="small" disabled>点击计算(待开发)</a-button>
+                    <a-button type="primary" size="small" @click="handleCalculateMv" :loading="calculating">立即计算</a-button>
                   </div>
                 </a-descriptions-item>
               </a-descriptions>
@@ -389,6 +486,7 @@
 import { ref, reactive, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { message } from 'ant-design-vue';
+import { QuestionCircleOutlined } from '@ant-design/icons-vue';
 import axios from 'axios';
 import * as options from '../../constants/member-options';
 
@@ -398,6 +496,7 @@ const userId = route.params.id as string;
 
 const loading = ref(false);
 const saving = ref(false);
+const calculating = ref(false);
 const activeTab = ref('profile');
 const matchmakers = ref<any[]>([]);
 const userInfo = JSON.parse(localStorage.getItem('admin_user') || '{}');
@@ -412,6 +511,7 @@ const formState = reactive({
   phone: '',
   serviceMatchmakerId: undefined,
   mvScore: null,
+  mvDetail: null,
   baseInfo: {
     name: '',
     gender: '',
@@ -478,6 +578,7 @@ const fetchProfile = async () => {
     formState.phone = data.user?.phone;
     formState.serviceMatchmakerId = data.serviceMatchmakerId;
     formState.mvScore = data.mvScore;
+    formState.mvDetail = data.mvDetail;
     
     if (data.baseInfo) Object.assign(formState.baseInfo, data.baseInfo);
     if (data.extInfo) Object.assign(formState.extInfo, data.extInfo);
@@ -528,6 +629,83 @@ const handleSave = async () => {
     message.error(error.response?.data?.message || '保存失败');
   } finally {
     saving.value = false;
+  }
+};
+
+// 验证必填项
+const validateMvFields = () => {
+  const { gender, birthday, height, weight, education } = formState.baseInfo;
+  const { appearance, braCup, annualIncome, parentsMaritalStatus, eqScore, commitmentScore } = formState.extInfo;
+  
+  const missingFields: string[] = [];
+  
+  // 通用必填项
+  if (!birthday) missingFields.push('出生日期');
+  if (!height) missingFields.push('身高');
+  if (!education) missingFields.push('学历');
+  if (!appearance) missingFields.push('长相');
+  
+  if (gender === '男') {
+    // 男性特有必填项
+    if (!annualIncome) missingFields.push('年收入');
+    if (!eqScore || eqScore.length === 0) missingFields.push('情商评分（至少选择一项）');
+    if (commitmentScore === undefined || commitmentScore === null) missingFields.push('长期专一承诺');
+  } else if (gender === '女') {
+    // 女性特有必填项
+    if (!weight) missingFields.push('体重');
+    if (!braCup) missingFields.push('罩杯');
+    if (!parentsMaritalStatus) missingFields.push('父母情感状况');
+  } else {
+    missingFields.push('性别（请先设置用户性别）');
+  }
+  
+  return missingFields;
+};
+
+// 计算MV值
+const handleCalculateMv = async () => {
+  // 1. 先验证必填项
+  const missingFields = validateMvFields();
+  if (missingFields.length > 0) {
+    message.warning({
+      content: `请先完善以下MV计算必填项：\n${missingFields.join('、')}`,
+      duration: 5,
+    });
+    return;
+  }
+  
+  calculating.value = true;
+  try {
+    const res = await axios.post(`/mv/calculate/${userId}`);
+    const data = res.data || res;
+    
+    // 更新显示
+    formState.mvScore = data.mvScore;
+    formState.mvDetail = data.mvDetail;
+    
+    // 调试：打印mvDetail到控制台
+    console.log('MV计算结果 - 性别:', formState.baseInfo.gender);
+    console.log('MV计算结果 - mvDetail:', JSON.stringify(formState.mvDetail, null, 2));
+    
+    message.success(`MV值计算完成！总分: ${data.mvScore.toFixed(2)}，使用方案: ${data.schemeName}`, 5);
+  } catch (error: any) {
+    // 详细的错误提示
+    const errorMsg = error.response?.data?.message || error.message || 'MV值计算失败';
+    const statusCode = error.response?.status;
+    
+    if (statusCode === 404) {
+      message.error('计算服务未找到，请联系管理员或稍后重试', 5);
+    } else if (statusCode === 400) {
+      message.error(`数据不完整：${errorMsg}`, 5);
+    } else if (statusCode === 500) {
+      message.error(`服务器错误：${errorMsg}`, 5);
+    } else {
+      message.error(`计算失败：${errorMsg}`, 5);
+    }
+    
+    console.error('MV计算错误详情:', error);
+  } finally {
+    calculating.value = false;
   }
 };
 
