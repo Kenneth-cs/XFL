@@ -17,12 +17,12 @@
           <a-menu-item key="/staff/list">人员列表</a-menu-item>
         </a-sub-menu>
 
-        <!-- 角色&门店管理 -->
-        <a-sub-menu key="system">
+        <!-- 角色&门店管理 (仅超级管理员可见) -->
+        <a-sub-menu key="system" v-if="isSuperAdmin">
           <template #icon><setting-outlined /></template>
-          <template #title>角色&门店管理</template>
+          <template #title>系统管理</template>
           <a-menu-item key="/system/roles">角色列表</a-menu-item>
-          <a-menu-item key="/system/stores" v-if="isSuperAdmin">门店列表</a-menu-item>
+          <a-menu-item key="/system/stores">门店列表</a-menu-item>
         </a-sub-menu>
 
         <!-- 用户档案管理 -->
@@ -100,7 +100,7 @@ const canMatch = computed(() => true); // 所有后台角色（包括红娘）�
 const currentModule = computed(() => {
   const path = route.path;
   if (path.startsWith('/staff')) return '后台人员管理';
-  if (path.startsWith('/system')) return '角色&门店管理';
+  if (path.startsWith('/system')) return '系统管理';
   if (path.startsWith('/members')) return '用户档案管理';
   return '工作台';
 });
