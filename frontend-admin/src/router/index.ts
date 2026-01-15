@@ -52,6 +52,12 @@ const router = createRouter({
           meta: { title: '用户列表', requiresAuth: true }
         },
         {
+          path: 'members/detail/:id',
+          name: 'MemberDetail',
+          component: () => import('../views/members/MemberDetail.vue'),
+          meta: { title: '用户档案详情', requiresAuth: true }
+        },
+        {
           path: 'members/match',
           name: 'MembersMatch',
           component: () => import('../views/members/MembersMatch.vue'),

@@ -115,8 +115,7 @@ const handleTableChange = (pag: any) => {
 };
 
 const viewProfile = (record: Member) => {
-  // TODO: 跳转到用户档案详情页（后续开发）
-  message.info('用户档案详情页功能待开发');
+  router.push(`/members/detail/${record.id}`);
 };
 
 onMounted(() => {

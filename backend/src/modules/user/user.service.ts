@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { SysUser, SysUserRole } from '../../entities/sys-user.entity';
 import { AppUser } from '../../entities/app-user.entity';
 import { AppUserProfile } from '../../entities/app-user-profile.entity';
+import { AssessmentRecord } from '../../entities/assessment-record.entity';
 import { IdGeneratorService } from '../../shared/services/id-generator.service';
 import { AuthService } from '../auth/auth.service';
 import { CurrentUserData } from '../../common/decorators';
@@ -18,6 +19,8 @@ export class UserService {
     private appUserRepository: Repository<AppUser>,
     @InjectRepository(AppUserProfile)
     private profileRepository: Repository<AppUserProfile>,
+    @InjectRepository(AssessmentRecord)
+    private assessmentRepository: Repository<AssessmentRecord>,
     private idGeneratorService: IdGeneratorService,
     private authService: AuthService,
   ) {}
@@ -374,7 +377,23 @@ export class UserService {
       profile.user.phone = maskPhone(profile.user.phone);
     }
 
-    return profile;
+    // 获取测评记录
+    const assessments = await this.assessmentRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+    });
+
+    // 整理测评结果 (取最新的)
+    const assessmentResults = {
+      enneagram: assessments.find(a => a.type === 1),
+      attachment: assessments.find(a => a.type === 2),
+      happiness: assessments.find(a => a.type === 3),
+    };
+
+    return {
+      ...profile,
+      assessmentResults,
+    };
   }
 
   /**
