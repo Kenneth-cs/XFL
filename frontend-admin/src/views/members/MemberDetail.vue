@@ -432,25 +432,107 @@
 
             <!-- 7. 测评结果 (只读展示) -->
             <a-card title="测评结果 (后台计算/同步)" class="mb-4">
-              <a-descriptions bordered column="1">
-                <a-descriptions-item label="九型人格结果">
-                  <div v-if="assessmentResults.enneagram">
-                    {{ getEnneagramSummary(assessmentResults.enneagram) }}
-                  </div>
-                  <div v-else class="text-gray-400">暂无数据</div>
-                </a-descriptions-item>
+              <!-- 九型人格详细结果 -->
+              <a-card type="inner" title="九型人格测评结果" class="mb-4" v-if="assessmentResults.enneagram">
+                <!-- 9个类型百分比 (从高到低) -->
+                <a-descriptions bordered size="small" :column="2" class="mb-3" :labelStyle="{ width: '200px' }">
+                  <a-descriptions-item label="测评结果详情" :span="2">
+                    <a-space direction="vertical" style="width: 100%;">
+                      <div 
+                        v-for="item in enneagramMatchData?.sortedTypes" 
+                        :key="item.type"
+                        style="display: flex; justify-content: space-between; padding: 4px 0;"
+                      >
+                        <span>
+                          <a-tag :color="enneagramMatchData.top3.includes(item.type) ? 'blue' : 'default'">
+                            {{ item.type }}号
+                          </a-tag>
+                          {{ item.label }}
+                        </span>
+                        <span style="font-weight: bold;">{{ (item.percentage * 100).toFixed(2) }}%</span>
+                      </div>
+                    </a-space>
+                  </a-descriptions-item>
+                  <a-descriptions-item label="Top3 性格类型" :span="2">
+                    <a-space>
+                      <a-tag 
+                        v-for="type in enneagramMatchData?.top3" 
+                        :key="type" 
+                        color="blue"
+                      >
+                        {{ type }}号 - {{ ENNEAGRAM_LABELS[type] }}
+                      </a-tag>
+                    </a-space>
+                  </a-descriptions-item>
+                </a-descriptions>
+                
+                <!-- 可匹配异性性格 -->
+                <a-descriptions bordered size="small" :column="1" :labelStyle="{ width: '200px' }">
+                  <a-descriptions-item label="可匹配异性性格 (按优先级排序)">
+                    <a-space direction="vertical" style="width: 100%;">
+                      <div 
+                        v-for="match in enneagramMatchData?.matchedTypes" 
+                        :key="match.type"
+                        style="display: flex; justify-content: space-between; padding: 4px 0;"
+                      >
+                        <span>
+                          <a-tag 
+                            :color="match.score >= 3 ? 'red' : match.score === 2 ? 'orange' : match.score === 1 ? 'green' : 'default'"
+                          >
+                            {{ oppositeGender }}{{ match.type }}号
+                          </a-tag>
+                          {{ match.label }}
+                        </span>
+                        <span>
+                          <a-tag :color="match.score >= 3 ? 'red' : match.score === 2 ? 'orange' : 'green'">
+                            {{ match.priority }}
+                          </a-tag>
+                        </span>
+                      </div>
+                    </a-space>
+                  </a-descriptions-item>
+                  <a-descriptions-item label="不匹配的异性类型 (互斥)" v-if="enneagramMatchData?.unmatchedTypes.length > 0">
+                    <a-space>
+                      <a-tag 
+                        v-for="unmatch in enneagramMatchData?.unmatchedTypes" 
+                        :key="unmatch.type" 
+                        color="error"
+                      >
+                        {{ oppositeGender }}{{ unmatch.type }}号 - {{ unmatch.label }}
+                      </a-tag>
+                    </a-space>
+                  </a-descriptions-item>
+                  <a-descriptions-item label="匹配结论" :span="2">
+                    <div style="white-space: pre-wrap; line-height: 1.8;">
+                      {{ enneagramMatchData?.conclusion }}
+                    </div>
+                  </a-descriptions-item>
+                </a-descriptions>
+              </a-card>
+              <a-alert v-else message="暂无九型人格测评数据" type="info" show-icon class="mb-4" />
+
+              <!-- 依恋关系结果 -->
+              <a-descriptions bordered column="1" class="mb-3" :labelStyle="{ width: '200px' }">
                 <a-descriptions-item label="依恋关系结果">
                   <div v-if="assessmentResults.attachment">
                     {{ getAttachmentSummary(assessmentResults.attachment) }}
                   </div>
                   <div v-else class="text-gray-400">暂无数据</div>
                 </a-descriptions-item>
+              </a-descriptions>
+
+              <!-- 幸福力结果 -->
+              <a-descriptions bordered column="1" class="mb-3" :labelStyle="{ width: '200px' }">
                 <a-descriptions-item label="幸福力结果">
                   <div v-if="assessmentResults.happiness">
                     总分: {{ assessmentResults.happiness.resultData?.totalScore || 'N/A' }}
                   </div>
                   <div v-else class="text-gray-400">暂无数据</div>
                 </a-descriptions-item>
+              </a-descriptions>
+
+              <!-- MV值 -->
+              <a-descriptions bordered column="1" :labelStyle="{ width: '200px' }">
                 <a-descriptions-item label="MV值 (后台计算)">
                   <div v-if="formState.mvScore">
                     <span class="text-lg font-bold text-red-500">{{ formState.mvScore }}</span> 分
@@ -489,6 +571,7 @@ import { message } from 'ant-design-vue';
 import { QuestionCircleOutlined } from '@ant-design/icons-vue';
 import axios from 'axios';
 import * as options from '../../constants/member-options';
+import { calculateEnneagramMatch, ENNEAGRAM_LABELS, type EnneagramMatchResult } from '../../utils/enneagram-match';
 
 const route = useRoute();
 const router = useRouter();
@@ -564,6 +647,23 @@ const assessmentResults = reactive({
   enneagram: null as any,
   attachment: null as any,
   happiness: null as any
+});
+
+// 计算九型人格匹配数据
+const enneagramMatchData = computed<EnneagramMatchResult | null>(() => {
+  if (!assessmentResults.enneagram?.resultData?.percentages || !formState.baseInfo?.gender) {
+    return null;
+  }
+  
+  const percentages = assessmentResults.enneagram.resultData.percentages;
+  const gender = formState.baseInfo.gender;
+  
+  return calculateEnneagramMatch(percentages, gender);
+});
+
+// 计算异性性别
+const oppositeGender = computed(() => {
+  return formState.baseInfo?.gender === '男' ? '女' : '男';
 });
 
 // 获取详情
