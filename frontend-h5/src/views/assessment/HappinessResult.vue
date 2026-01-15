@@ -109,6 +109,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const result = ref<any>(null)
@@ -150,15 +151,36 @@ const retakeTest = () => {
   router.push('/assessment/happiness')
 }
 
-onMounted(() => {
+onMounted(async () => {
   const state = history.state as any
   if (state?.result) {
     result.value = state.result
   } else {
-    console.warn('未找到测评结果数据')
-    setTimeout(() => {
-      router.push('/assessment')
-    }, 2000)
+    // 如果没有结果数据，从后端获取最新结果
+    try {
+      const userStore = useUserStore()
+      if (!userStore.userInfo?.id) {
+        router.push('/assessment')
+        return
+      }
+      
+      const { getLatestResults } = await import('@/api/assessment')
+      const res: any = await getLatestResults(userStore.userInfo.id)
+      
+      if (res?.happiness?.result) {
+        result.value = res.happiness.result
+      } else {
+        console.warn('未找到婚恋幸福力测评记录')
+        setTimeout(() => {
+          router.push('/assessment')
+        }, 1500)
+      }
+    } catch (error) {
+      console.error('获取测评结果失败', error)
+      setTimeout(() => {
+        router.push('/assessment')
+      }, 1500)
+    }
   }
 })
 </script>

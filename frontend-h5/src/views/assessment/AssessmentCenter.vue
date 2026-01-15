@@ -121,11 +121,25 @@ const getStatusClass = (type: number) => {
 }
 
 const handleCardClick = (type: string) => {
-  // 如果已完成，跳转到结果页（暂未实现，先跳转到答题页的预览模式或直接重新测试）
-  // 这里逻辑简化：统一跳转到对应页面，内部判断是答题还是看结果
+  // 判断是否已完成测评
+  const typeMap: Record<string, string> = {
+    'enneagram': 'enneagram',
+    'attachment': 'attachment',
+    'happiness': 'happiness'
+  }
   
-  // 目前先假设跳转去答题
-  router.push(`/assessment/${type}`)
+  const resultData = latestResults.value[typeMap[type]]
+  
+  if (resultData && resultData.result) {
+    // 已完成测评，跳转到结果页并传递结果数据
+    router.push({
+      path: `/assessment/${type}/result`,
+      state: { result: resultData.result }
+    })
+  } else {
+    // 未完成测评，跳转到做题页
+    router.push(`/assessment/${type}`)
+  }
 }
 
 const goToProfile = () => {

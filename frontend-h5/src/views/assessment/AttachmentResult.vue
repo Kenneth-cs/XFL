@@ -1,31 +1,35 @@
 <template>
   <div class="attachment-result">
     <div class="result-header">
-      <h2>依恋关系测评报告</h2>
+      <h2>专业依恋关系测评结果</h2>
       <p>基于36题深度测评</p>
     </div>
 
     <div class="result-content" v-if="result">
       <!-- 依恋类型卡片 -->
       <div class="type-card" :class="`type-${getTypeClass(result.type)}`">
-        <div class="type-badge">{{ result.type }}</div>
-        <h3 class="type-label">{{ result.typeDetails?.typeLabel || '关系模式' }}</h3>
-        <p class="type-desc">{{ result.typeDetails?.coreTraits || '暂无描述' }}</p>
+        <p class="intro-text">您在《幸福力婚恋关系测试》中显示是：</p>
+        <div v-if="result.type && !result.type.includes('待进一步')" class="type-badge">{{ result.type }}</div>
+        <h3 v-if="getTypeLabel(result.type)" class="type-label">{{ getTypeLabel(result.type) }}</h3>
+        <div class="dimension-combo">
+          <span class="combo-text">{{ getDimensionCombo(result) }}</span>
+        </div>
+        <p v-if="getTypeDescription(result.type)" class="type-desc">{{ getTypeDescription(result.type) }}</p>
       </div>
 
       <!-- 三维度得分 -->
       <div class="scores-card">
-        <h3 class="section-title">三维度得分</h3>
+        <h3 class="section-title">三维度得分详情</h3>
         
         <div class="score-item anxiety">
           <div class="score-label">
             <span class="score-icon">A</span>
-            <span class="score-name">焦虑维度</span>
+            <span class="score-name">焦虑维度（Anxiety）</span>
           </div>
           <div class="score-bar">
             <van-progress 
               :percentage="(result.anxietyScore / 12) * 100" 
-              stroke-width="8"
+              stroke-width="10"
               :pivot-text="`${result.anxietyScore}/12`"
               color="#ff9a9e"
             />
@@ -36,12 +40,12 @@
         <div class="score-item avoidance">
           <div class="score-label">
             <span class="score-icon">B</span>
-            <span class="score-name">回避维度</span>
+            <span class="score-name">回避维度（Avoidance）</span>
           </div>
           <div class="score-bar">
             <van-progress 
               :percentage="(result.avoidanceScore / 12) * 100" 
-              stroke-width="8"
+              stroke-width="10"
               :pivot-text="`${result.avoidanceScore}/12`"
               color="#667eea"
             />
@@ -52,12 +56,12 @@
         <div class="score-item security">
           <div class="score-label">
             <span class="score-icon">C</span>
-            <span class="score-name">安全感维度</span>
+            <span class="score-name">安全感维度（Security）</span>
           </div>
           <div class="score-bar">
             <van-progress 
               :percentage="(result.securityScore / 12) * 100" 
-              stroke-width="8"
+              stroke-width="10"
               :pivot-text="`${result.securityScore}/12`"
               color="#84fab0"
             />
@@ -68,9 +72,9 @@
 
       <!-- 建议与解读 -->
       <div class="advice-card">
-        <h3 class="section-title">关系建议</h3>
+        <h3 class="section-title">专业关系建议</h3>
         <div class="advice-content">
-          <p>{{ getAdvice(result.type) }}</p>
+          <p class="advice-text">更详细的测试结果解读与改善方案，请联系您的专属红娘老师</p>
         </div>
       </div>
 
@@ -105,10 +109,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const result = ref<any>(null)
 
+// 类型映射（用于样式类名）
 const getTypeClass = (type: string) => {
   const classMap: Record<string, string> = {
     '安全型': 'security',
@@ -119,6 +125,45 @@ const getTypeClass = (type: string) => {
   return classMap[type] || 'default'
 }
 
+// 类型标签（如"健康核心型"）
+const getTypeLabel = (type: string) => {
+  // 过滤掉"待进一步沟通"类型
+  if (type && type.includes('待进一步')) {
+    return ''
+  }
+  
+  const labelMap: Record<string, string> = {
+    '安全型': '健康核心型',
+    '焦虑型': '渴求亲密型',
+    '回避型': '疏离独立型',
+    '紊乱型': '矛盾纠结型'
+  }
+  return labelMap[type] || ''
+}
+
+// 维度组合说明
+const getDimensionCombo = (resultData: any) => {
+  const a = resultData.anxietyScore || 0
+  const b = resultData.avoidanceScore || 0
+  
+  const anxietyLevel = a >= 5 ? '高焦虑' : '低焦虑'
+  const avoidanceLevel = b >= 5 ? '高回避' : '低回避'
+  
+  return `${anxietyLevel} + ${avoidanceLevel}`
+}
+
+// 核心特质描述
+const getTypeDescription = (type: string) => {
+  const descMap: Record<string, string> = {
+    '安全型': '安全感充足，既信任伴侣、愿意亲密，又能保持自我独立',
+    '焦虑型': '极度渴望亲密与认可，害怕被抛弃，对关系的安全感极低',
+    '回避型': '极度重视个人独立，排斥情感亲密与依赖，习惯用疏离保护自己',
+    '紊乱型': '既极度渴望亲密、害怕被抛弃，又极度抗拒亲密、害怕被伤害'
+  }
+  return descMap[type] || ''
+}
+
+// 维度得分解读
 const getScoreDesc = (dimension: string, score: number) => {
   const descMap: Record<string, Record<string, string>> = {
     A: {
@@ -139,16 +184,6 @@ const getScoreDesc = (dimension: string, score: number) => {
   return descMap[dimension]?.[level] || ''
 }
 
-const getAdvice = (type: string) => {
-  const adviceMap: Record<string, string> = {
-    '安全型': '你拥有健康的依恋模式，既能享受亲密又能保持独立。继续保持真诚沟通和相互信任，这是关系长久的基石。',
-    '焦虑型': '你渴望亲密但容易缺乏安全感。建议培养自我价值感，学会独立，与伴侣建立稳定的沟通模式，表达需求而非期待对方猜测。',
-    '回避型': '你重视独立但可能排斥过度亲密。尝试逐步打开心扉，接纳伴侣的关心，允许自己表达脆弱和需求，这不会削弱你的独立性。',
-    '紊乱型': '你既渴望亲密又害怕受伤，内心矛盾纠结。建议寻求专业心理咨询，疗愈过往创伤，学习健康的情感表达和边界设定。'
-  }
-  return adviceMap[type] || '请保持自我觉察，必要时寻求专业帮助。'
-}
-
 const backToCenter = () => {
   router.push('/assessment')
 }
@@ -157,15 +192,36 @@ const retakeTest = () => {
   router.push('/assessment/attachment')
 }
 
-onMounted(() => {
+onMounted(async () => {
   const state = history.state as any
   if (state?.result) {
     result.value = state.result
   } else {
-    console.warn('未找到测评结果数据')
-    setTimeout(() => {
-      router.push('/assessment')
-    }, 2000)
+    // 如果没有结果数据，从后端获取最新结果
+    try {
+      const userStore = useUserStore()
+      if (!userStore.userInfo?.id) {
+        router.push('/assessment')
+        return
+      }
+      
+      const { getLatestResults } = await import('@/api/assessment')
+      const res: any = await getLatestResults(userStore.userInfo.id)
+      
+      if (res?.attachment?.result) {
+        result.value = res.attachment.result
+      } else {
+        console.warn('未找到依恋关系测评记录')
+        setTimeout(() => {
+          router.push('/assessment')
+        }, 1500)
+      }
+    } catch (error) {
+      console.error('获取测评结果失败', error)
+      setTimeout(() => {
+        router.push('/assessment')
+      }, 1500)
+    }
   }
 })
 </script>
@@ -224,6 +280,14 @@ onMounted(() => {
   border-top: 4px solid #fa8c84;
 }
 
+.intro-text {
+  font-size: 15px;
+  color: #666;
+  margin-bottom: 16px;
+  text-align: center;
+  line-height: 1.6;
+}
+
 .type-badge {
   display: inline-block;
   background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
@@ -236,15 +300,30 @@ onMounted(() => {
 }
 
 .type-label {
-  font-size: 24px;
+  font-size: 20px;
   color: #333;
   margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.dimension-combo {
+  margin-bottom: 16px;
+}
+
+.combo-text {
+  display: inline-block;
+  background: rgba(255, 154, 158, 0.15);
+  color: #ff6b6b;
+  padding: 6px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .type-desc {
   font-size: 14px;
   color: #666;
-  line-height: 1.6;
+  line-height: 1.8;
 }
 
 .scores-card,
@@ -318,6 +397,10 @@ onMounted(() => {
 }
 
 .advice-content {
+  text-align: center;
+}
+
+.advice-text {
   font-size: 14px;
   color: #666;
   line-height: 1.8;

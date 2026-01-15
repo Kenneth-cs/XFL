@@ -1,58 +1,55 @@
 <template>
   <div class="enneagram-result">
     <div class="result-header">
-      <h2>九型人格测评报告</h2>
+      <h2>专业九型性格测试结果</h2>
       <p>基于144题深度测评</p>
     </div>
 
     <div class="result-content" v-if="result">
-      <!-- 主人格卡片 -->
-      <div class="primary-type-card">
-        <div class="type-badge">{{ result.primaryType }}号人格</div>
-        <h3 class="type-name">{{ getTypeName(result.primaryType) }}</h3>
-        <p class="type-desc">{{ getTypeDescription(result.primaryType) }}</p>
-        <div class="score-info">
-          <span>匹配度：{{ (result.percentages[result.primaryType] || 0).toFixed(1) }}%</span>
-        </div>
-      </div>
-
-      <!-- Top3人格 -->
-      <div class="top3-section">
-        <h3 class="section-title">你的核心人格特质 (Top 3)</h3>
-        <div class="top3-list">
+      <!-- 柱状图 -->
+      <div class="chart-container">
+        <div class="chart-bars">
           <div 
-            v-for="(typeNum, index) in result.top3" 
-            :key="typeNum"
-            class="top3-item"
+            v-for="item in sortedTypes" 
+            :key="item.type"
+            class="bar-item"
           >
-            <div class="rank">{{ index + 1 }}</div>
-            <div class="type-info">
-              <div class="type-label">{{ typeNum }}号 - {{ getTypeName(typeNum) }}</div>
-              <van-progress 
-                :percentage="result.percentages[typeNum] || 0" 
-                stroke-width="6"
-                :pivot-text="`${(result.percentages[typeNum] || 0).toFixed(1)}%`"
-                color="linear-gradient(to right, #667eea, #764ba2)"
-              />
+            <div class="bar-wrapper">
+              <div 
+                class="bar" 
+                :style="{ height: `${item.percentage}%` }"
+                :class="{ 'highlight': isTop3(item.type) }"
+              >
+                <div class="bar-value">{{ item.percentage }}%</div>
+              </div>
+            </div>
+            <div class="bar-label">
+              {{ item.type }}号<br/>（{{ getTypeName(item.type) }}）
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 九型人格雷达图（文字版或简化版） -->
-      <div class="all-scores-section">
-        <h3 class="section-title">完整人格得分</h3>
-        <div class="score-grid">
-          <div 
-            v-for="typeNum in [1,2,3,4,5,6,7,8,9]" 
-            :key="typeNum"
-            class="score-item"
-            :class="{ 'highlight': result.top3.includes(typeNum) }"
-          >
-            <div class="score-type">{{ typeNum }}号</div>
-            <div class="score-name">{{ getTypeName(typeNum) }}</div>
-            <div class="score-value">{{ (result.percentages[typeNum] || 0).toFixed(1) }}%</div>
+      <!-- 说明文本 -->
+      <div class="description-section">
+        <p class="desc-line">测试结果，选取三个最高值</p>
+        <p class="desc-line">数值越高，说明你这个号码的特征相对越多。数值越低，说明你这个号码的特征相对较少。</p>
+        <p class="desc-line">这三个高分值的性格型号介绍，都看看，试试看你更像哪个，最像的那个可能就是你的性格类型</p>
+      </div>
+
+      <!-- Top3人格详细介绍 -->
+      <div class="top3-details">
+        <div 
+          v-for="(typeNum, index) in result.top3" 
+          :key="typeNum"
+          class="type-card"
+        >
+          <div class="card-header">
+            <span class="type-badge">{{ Number(index) + 1 }}号人格</span>
+            <span class="type-title">{{ typeNum }}号 - {{ getTypeName(Number(typeNum)) }}</span>
+            <span class="type-percentage">{{ formatPercentage(result.percentages[typeNum]) }}%</span>
           </div>
+          <p class="type-description">{{ getTypeDescription(Number(typeNum)) }}</p>
         </div>
       </div>
 
@@ -85,8 +82,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 
@@ -118,12 +116,52 @@ const typeDescriptions: Record<number, string> = {
   9: '平和包容，善于调和，追求和谐与内心平静'
 }
 
+// 按百分比降序排列所有人格类型（相同百分比按人格编号升序）
+const sortedTypes = computed(() => {
+  if (!result.value || !result.value.percentages) return []
+  
+  const types = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(type => {
+    // 后端返回的是小数形式（0.6364），需要转换为百分比（63.64）
+    const rawPercentage = result.value.percentages[type] || 0
+    const percentage = rawPercentage < 1 ? rawPercentage * 100 : rawPercentage
+    
+    return {
+      type,
+      percentage: Number(percentage.toFixed(2))  // 保留两位小数
+    }
+  })
+  
+  // 排序规则：先按百分比降序，相同百分比按人格编号升序
+  types.sort((a, b) => {
+    if (b.percentage !== a.percentage) {
+      return b.percentage - a.percentage
+    }
+    return a.type - b.type
+  })
+  
+  return types
+})
+
 const getTypeName = (type: number) => {
   return typeNames[type] || '未知'
 }
 
 const getTypeDescription = (type: number) => {
   return typeDescriptions[type] || '暂无描述'
+}
+
+// 格式化百分比显示（后端返回的可能是小数形式）
+const formatPercentage = (value: number) => {
+  if (!value) return '0'
+  // 如果是小数形式（< 1），转换为百分比
+  const percentage = value < 1 ? value * 100 : value
+  return percentage.toFixed(2)
+}
+
+// 判断是否在Top3中（兼容数字和字符串类型）
+const isTop3 = (type: number) => {
+  if (!result.value?.top3) return false
+  return result.value.top3.some((t: any) => Number(t) === type)
 }
 
 const backToCenter = () => {
@@ -134,19 +172,38 @@ const retakeTest = () => {
   router.push('/assessment/enneagram')
 }
 
-onMounted(() => {
+onMounted(async () => {
   // 从路由 state 获取结果数据
   const state = history.state as any
   if (state?.result) {
     result.value = state.result
   } else {
-    // 如果没有结果数据，可能是刷新页面或直接访问
-    // 可以从后端重新获取最新结果，或提示用户重新测评
-    console.warn('未找到测评结果数据')
-    // 这里简化处理，返回测评中心
-    setTimeout(() => {
-      router.push('/assessment')
-    }, 2000)
+    // 如果没有结果数据，从后端获取最新结果
+    try {
+      const userStore = useUserStore()
+      if (!userStore.userInfo?.id) {
+        router.push('/assessment')
+        return
+      }
+      
+      const { getLatestResults } = await import('@/api/assessment')
+      const res: any = await getLatestResults(userStore.userInfo.id)
+      
+      if (res?.enneagram?.result) {
+        result.value = res.enneagram.result
+      } else {
+        // 没有测评记录，返回测评中心
+        console.warn('未找到九型人格测评记录')
+        setTimeout(() => {
+          router.push('/assessment')
+        }, 1500)
+      }
+    } catch (error) {
+      console.error('获取测评结果失败', error)
+      setTimeout(() => {
+        router.push('/assessment')
+      }, 1500)
+    }
   }
 })
 </script>
@@ -156,6 +213,7 @@ onMounted(() => {
   min-height: 100vh;
   background: linear-gradient(135deg, #fff0f5 0%, #fff9fb 100%);
   padding: 20px;
+  padding-bottom: 40px;
 }
 
 .result-header {
@@ -165,8 +223,9 @@ onMounted(() => {
 }
 
 .result-header h2 {
-  font-size: 24px;
+  font-size: 22px;
   margin-bottom: 8px;
+  font-weight: 600;
 }
 
 .result-header p {
@@ -181,133 +240,158 @@ onMounted(() => {
   gap: 20px;
 }
 
-.primary-type-card {
+/* 柱状图容器 */
+.chart-container {
   background: white;
   border-radius: 16px;
-  padding: 32px 24px;
+  padding: 24px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: stretch; /* 关键修复：让所有柱子项高度填满父容器 */
+  justify-content: space-between;
+  height: 240px;
+  gap: 8px;
+  padding: 0 4px;
+  min-width: 100%;
+}
+
+.bar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 36px;
+  height: 100%; /* 确保填满父容器 */
+}
+
+.bar-wrapper {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+
+.bar {
+  width: 100%;
+  max-width: 32px;
+  background: linear-gradient(to top, #ffb7c5, #ffdde1);
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  transition: all 0.3s;
+  min-height: 4%;
+  opacity: 0.7;
+}
+
+.bar.highlight {
+  background: linear-gradient(to top, #ff8fa3, #ffb7c5);
+  opacity: 1;
+  box-shadow: 0 2px 8px rgba(255, 143, 163, 0.4);
+}
+
+.bar-value {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: bold;
+  color: #ff8fa3;
+  white-space: nowrap;
+}
+
+.bar-label {
+  font-size: 10px;
+  color: #666;
   text-align: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  line-height: 1.3;
+  margin-top: 8px;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+/* 说明文本 */
+.description-section {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.desc-line {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.8;
+  margin-bottom: 12px;
+}
+
+.desc-line:last-child {
+  margin-bottom: 0;
+}
+
+.desc-line:first-child {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Top3人格详细介绍 */
+.top3-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.type-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #ffb7c5;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .type-badge {
   display: inline-block;
   background: linear-gradient(135deg, #ffb7c5 0%, #ffdde1 100%);
   color: #5d4037;
-  padding: 8px 24px;
-  border-radius: 20px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.type-title {
   font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 16px;
-}
-
-.type-name {
-  font-size: 28px;
-  color: #333;
-  margin-bottom: 12px;
-}
-
-.type-desc {
-  font-size: 14px;
-  color: #666;
-  line-height: 1.6;
-  margin-bottom: 16px;
-}
-
-.score-info {
-  font-size: 14px;
-  color: #ff8fa3;
-  font-weight: bold;
-}
-
-.top3-section,
-.all-scores-section {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.section-title {
-  font-size: 18px;
-  color: #333;
-  margin-bottom: 20px;
   font-weight: 600;
-}
-
-.top3-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.top3-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.rank {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #ffb7c5 0%, #ffdde1 100%);
-  color: #5d4037;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-.type-info {
+  color: #333;
   flex: 1;
 }
 
-.type-label {
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 8px;
-  font-weight: 500;
-}
-
-.score-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.score-item {
-  background: #f7f8fa;
-  border-radius: 12px;
-  padding: 16px 12px;
-  text-align: center;
-  transition: all 0.3s;
-}
-
-.score-item.highlight {
-  background: linear-gradient(135deg, rgba(255, 183, 197, 0.1) 0%, rgba(255, 221, 225, 0.1) 100%);
-  border: 2px solid #ffb7c5;
-}
-
-.score-type {
-  font-size: 20px;
+.type-percentage {
+  font-size: 18px;
   font-weight: bold;
   color: #ff8fa3;
-  margin-bottom: 4px;
 }
 
-.score-name {
-  font-size: 12px;
+.type-description {
+  font-size: 14px;
   color: #666;
-  margin-bottom: 8px;
+  line-height: 1.6;
 }
 
-.score-value {
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
-}
-
+/* 操作按钮 */
 .action-buttons {
   margin-top: 12px;
 }
