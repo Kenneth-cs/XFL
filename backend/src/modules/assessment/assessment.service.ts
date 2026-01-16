@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AssessmentRecord } from '../../entities/assessment-record.entity';
-import { UserProfile } from '../../entities/user-profile.entity';
+import { AppUserProfile } from '../../entities/app-user-profile.entity';
 import { EnneagramCalculator } from './calculators/enneagram.calculator';
 import { AttachmentCalculator } from './calculators/attachment.calculator';
 import { HappinessCalculator } from './calculators/happiness.calculator';
@@ -20,8 +20,8 @@ export class AssessmentService {
   constructor(
     @InjectRepository(AssessmentRecord)
     private readonly assessmentRecordRepository: Repository<AssessmentRecord>,
-    @InjectRepository(UserProfile)
-    private readonly userProfileRepository: Repository<UserProfile>,
+    @InjectRepository(AppUserProfile)
+    private readonly userProfileRepository: Repository<AppUserProfile>,
     private readonly enneagramCalculator: EnneagramCalculator,
     private readonly attachmentCalculator: AttachmentCalculator,
     private readonly happinessCalculator: HappinessCalculator,

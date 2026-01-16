@@ -12,6 +12,7 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { AssessmentModule } from './modules/assessment/assessment.module';
 import { MvModule } from './modules/mv/mv.module';
+import { MatchModule } from './modules/match/match.module';
 import { SharedModule } from './shared/shared.module';
 
 @Module({
@@ -51,6 +52,7 @@ import { SharedModule } from './shared/shared.module';
     UploadModule,
     AssessmentModule,
     MvModule,
+    MatchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

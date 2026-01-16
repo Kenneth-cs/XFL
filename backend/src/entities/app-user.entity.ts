@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
 import { Store } from './store.entity';
+import { AppUserProfile } from './app-user-profile.entity';
 import { Exclude } from 'class-transformer';
 
 @Entity('app_user')
@@ -29,5 +30,8 @@ export class AppUser {
   @ManyToOne(() => Store)
   @JoinColumn({ name: 'store_id' })
   store: Store;
+
+  @OneToOne(() => AppUserProfile, profile => profile.user)
+  profile: AppUserProfile;
 }
 

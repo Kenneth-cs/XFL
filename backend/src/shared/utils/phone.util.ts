@@ -22,7 +22,7 @@ export function maskPhone(phone: string | null | undefined): string {
  * @param shouldMask 是否需要脱敏
  * @returns 处理后的用户列表
  */
-export function maskUsersPhone<T extends { phone?: string }>(
+export function maskUsersPhone<T extends { phone?: string; profile?: any }>(
   users: T[],
   shouldMask: boolean
 ): T[] {
@@ -30,9 +30,16 @@ export function maskUsersPhone<T extends { phone?: string }>(
     return users;
   }
 
-  return users.map(user => ({
-    ...user,
-    phone: user.phone ? maskPhone(user.phone) : user.phone
-  }));
+  return users.map(user => {
+    // 使用 Object.assign 而不是展开运算符，确保保留所有属性（包括关系）
+    const masked = Object.assign({}, user, {
+      phone: user.phone ? maskPhone(user.phone) : user.phone
+    });
+    // 显式保留 profile 关系
+    if (user.profile) {
+      masked.profile = user.profile;
+    }
+    return masked;
+  }) as T[];
 }
 

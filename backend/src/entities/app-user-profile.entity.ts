@@ -27,7 +27,7 @@ export class AppUserProfile {
   @UpdateDateColumn({ name: 'updated_at', comment: '更新时间' })
   updatedAt: Date;
 
-  @OneToOne(() => AppUser)
+  @OneToOne(() => AppUser, user => user.profile)
   @JoinColumn({ name: 'user_id' })
   user: AppUser;
 }

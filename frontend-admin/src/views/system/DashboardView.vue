@@ -118,7 +118,11 @@ const currentPage = computed(() => {
 
 // 监听路由变化，更新选中菜单
 watch(() => route.path, (newPath) => {
-  selectedKeys.value = [newPath];
+  if (newPath.startsWith('/members/match')) {
+    selectedKeys.value = ['/members/match'];
+  } else {
+    selectedKeys.value = [newPath];
+  }
 }, { immediate: true });
 
 // 菜单点击事件

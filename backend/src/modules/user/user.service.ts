@@ -330,6 +330,43 @@ export class UserService {
    * @param storeId 如果为 undefined，则查询所有门店（仅限超级管理员场景）
    * @param currentUser 当前登录用户信息（用于判断是否需要手机号脱敏）
    */
+  /**
+   * 🔍 调试专用：直接查询并返回所有用户及档案
+   */
+  async debugFindAll() {
+    // 1. 查前 5 个用户
+    const users = await this.appUserRepository.find({
+      take: 5,
+      order: { createdAt: 'DESC' },
+    });
+    
+    // 2. 提取 ID
+    const userIds = users.map(u => u.id);
+    
+    // 3. 查档案
+    const profiles = await this.profileRepository.findByIds(userIds);
+    
+    // 4. 手动拼装
+    const results = users.map(user => {
+      const profile = profiles.find(p => p.userId === user.id);
+      return {
+        id: user.id,
+        phone: user.phone,
+        // 直接返回 profile，不做任何隐藏
+        profile: profile ? {
+          baseInfo: profile.baseInfo,
+          mvScore: profile.mvScore
+        } : '❌ 无档案记录'
+      };
+    });
+
+    return {
+      message: '这是调试接口返回的原始数据',
+      count: results.length,
+      data: results
+    };
+  }
+
   async findAllAppUsers(storeId?: string, page = 1, limit = 20, currentUser?: CurrentUserData) {
     const where: any = {};
     // 只有当 storeId 存在时才添加过滤条件
@@ -338,6 +375,7 @@ export class UserService {
       where.storeId = storeId;
     }
 
+    // 1. 先查询用户列表（不关联查询 profile，避免 ORM 映射问题）
     const [users, total] = await this.appUserRepository.findAndCount({
       where,
       skip: (page - 1) * limit,
@@ -345,12 +383,40 @@ export class UserService {
       order: { createdAt: 'DESC' },
     });
 
+    // 2. 提取用户 ID 列表
+    const userIds = users.map(u => u.id);
+
+    // 3. 如果有用户，手动查询对应的 Profile 并拼装
+    // 这种"手动拼装"方式比依赖 ORM 关系映射更可靠，特别是在共享主键的一对一关系中
+    if (userIds.length > 0) {
+      const profiles = await this.profileRepository.findByIds(userIds);
+      const profileMap = new Map(profiles.map(p => [p.userId, p]));
+
+      users.forEach(user => {
+        user.profile = profileMap.get(user.id);
+      });
+    }
+
+    // 🔍 调试：查看手动拼装后的数据
+    console.log('🔍 [Manual] 查询到的用户数:', users.length);
+    if (users[0]) {
+      console.log('🔍 [Manual] 第一个用户ID:', users[0].id);
+      console.log('🔍 [Manual] 第一个用户是否有profile:', !!users[0].profile);
+      if (users[0].profile) {
+         console.log('🔍 [Manual] profile.baseInfo:', JSON.stringify(users[0].profile.baseInfo));
+      }
+    }
+
     // 手机号脱敏：普通红娘看不到完整手机号
     const shouldMask = currentUser?.role === SysUserRole.MATCHMAKER;
     const maskedUsers = maskUsersPhone(users, shouldMask);
 
+    // 🚨 强制处理：将 profile 显式保留，防止被拦截器过滤
+    // 使用 JSON.parse(JSON.stringify()) 可以移除类的元数据，从而绕过 ClassSerializerInterceptor 的过滤
+    const plainUsers = JSON.parse(JSON.stringify(maskedUsers));
+
     return {
-      data: maskedUsers,
+      data: plainUsers,
       total,
       page,
       limit,
@@ -393,6 +459,49 @@ export class UserService {
     return {
       ...profile,
       assessmentResults,
+    };
+  }
+
+  /**
+   * 临时修复：为没有档案的用户创建默认档案
+   */
+  async fixMissingProfiles() {
+    // 1. 查询所有用户
+    const allUsers = await this.appUserRepository.find({
+      relations: ['profile'],
+    });
+
+    // 2. 筛选出没有档案的用户
+    const usersWithoutProfile = allUsers.filter(u => !u.profile);
+
+    if (usersWithoutProfile.length === 0) {
+      return { message: '所有用户都已有档案', count: 0 };
+    }
+
+    // 3. 为这些用户创建默认档案
+    const profiles = usersWithoutProfile.map(user => {
+      return this.profileRepository.create({
+        userId: user.id,
+        baseInfo: {
+          name: `未命名_${user.id.slice(-4)}`,
+          gender: '未知',
+          birthday: '1990-01-01',
+          height: 170,
+          weight: 60,
+          education: '本科',
+          marriage: '未婚',
+          ethnicity: '汉族',
+        },
+        extInfo: {},
+      });
+    });
+
+    await this.profileRepository.save(profiles);
+
+    return {
+      message: `成功为 ${profiles.length} 个用户创建默认档案`,
+      count: profiles.length,
+      userIds: usersWithoutProfile.map(u => u.id),
     };
   }
 

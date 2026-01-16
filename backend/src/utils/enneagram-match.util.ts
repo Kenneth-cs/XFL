@@ -121,3 +121,50 @@ export function getMatchableOppositeTypes(
     .map(([type]) => parseInt(type));
 }
 
+/**
+ * 检查两个用户的九型人格是否匹配
+ * @param initiatorTypes - 发起方Top3人格
+ * @param initiatorGender - 发起方性别
+ * @param candidateTypes - 候选方Top3人格
+ * @returns { isPass: boolean, overlapCount: number }
+ */
+export function checkEnneagramMatch(
+  initiatorTypes: number[],
+  initiatorGender: '男' | '女',
+  candidateTypes: number[],
+): { isPass: boolean; overlapCount: number } {
+  // 确定使用的矩阵：行是发起方，列是候选方
+  // 如果发起方是男，用 MALE_TO_FEMALE_MATRIX (行男列女)
+  // 如果发起方是女，用 FEMALE_TO_MALE_MATRIX (行女列男)
+  const matrix = initiatorGender === '男' ? MALE_TO_FEMALE_MATRIX : FEMALE_TO_MALE_MATRIX;
+
+  let isPass = true;
+  let overlapCount = 0;
+
+  // 遍历发起方的 Top3
+  for (const iType of initiatorTypes) {
+    if (iType < 1 || iType > 9) continue;
+
+    // 遍历候选方的 Top3
+    for (const cType of candidateTypes) {
+      if (cType < 1 || cType > 9) continue;
+
+      const score = matrix[iType - 1][cType - 1];
+
+      // 一票否决：如果有 -1 分，直接不匹配
+      if (score === -1) {
+        isPass = false;
+        break;
+      }
+
+      // 统计重合度：如果有 +1 分，计数加1
+      if (score === 1) {
+        overlapCount++;
+      }
+    }
+    if (!isPass) break;
+  }
+
+  return { isPass, overlapCount };
+}
+

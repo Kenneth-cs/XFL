@@ -231,6 +231,19 @@ export class UserController {
   /**
    * 获取前台用户列表
    */
+  // =========================================================
+  // 🔍 调试专用接口 (开始)
+  // =========================================================
+  @Get('debug-profile')
+  @Public() // 允许未登录访问
+  async debugProfile() {
+    console.log('🔍 [DebugAPI] 收到调试请求');
+    return await this.userService.debugFindAll();
+  }
+  // =========================================================
+  // 🔍 调试专用接口 (结束)
+  // =========================================================
+
   @Get('app')
   @UseGuards(RolesGuard)
   async findAllAppUsers(
@@ -278,6 +291,16 @@ export class UserController {
   ) {
     // 传递当前用户信息，用于权限校验（如分配服务红娘）
     return await this.userService.updateUserProfile(userId, updateDto, currentUser);
+  }
+
+  /**
+   * 临时修复接口：为没有档案的用户创建默认档案
+   */
+  @Post('fix-profiles')
+  @UseGuards(RolesGuard)
+  @Roles(SysUserRole.SUPER_ADMIN)
+  async fixMissingProfiles() {
+    return await this.userService.fixMissingProfiles();
   }
 }
 

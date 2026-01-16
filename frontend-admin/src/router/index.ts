@@ -62,6 +62,12 @@ const router = createRouter({
           name: 'MembersMatch',
           component: () => import('../views/members/MembersMatch.vue'),
           meta: { title: '智能匹配', requiresAuth: true }
+        },
+        {
+          path: 'members/match-detail/:id',
+          name: 'MatchDetail',
+          component: () => import('../views/members/MatchDetail.vue'),
+          meta: { title: '匹配详情', requiresAuth: true }
         }
       ]
     }
