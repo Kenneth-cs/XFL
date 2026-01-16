@@ -644,15 +644,57 @@
               </a-card>
               <a-alert v-else message="暂无依恋关系测评数据" type="info" show-icon class="mb-4" />
 
-              <!-- 幸福力结果 -->
-              <a-descriptions bordered column="1" class="mb-3" :labelStyle="{ width: '200px' }">
-                <a-descriptions-item label="幸福力结果">
-                  <div v-if="assessmentResults.happiness">
-                    总分: {{ assessmentResults.happiness.resultData?.totalScore || 'N/A' }}
+              <!-- 幸福力详细结果 -->
+              <a-card type="inner" title="婚恋幸福力测评结果" class="mb-4" v-if="assessmentResults.happiness">
+                <!-- 双环图展示 -->
+                <div style="display: flex; gap: 40px; justify-content: center; margin-bottom: 24px;">
+                  <!-- 用户得分圆环 -->
+                  <div style="text-align: center;">
+                    <h4 style="margin-bottom: 16px; font-size: 15px; color: #333;">用户测试结果</h4>
+                    <div ref="userHappinessChartRef" style="width: 500px; height: 500px;"></div>
                   </div>
-                  <div v-else class="text-gray-400">暂无数据</div>
-                </a-descriptions-item>
-              </a-descriptions>
+                  
+                  <!-- 满分图例 -->
+                  <div style="text-align: center;">
+                    <h4 style="margin-bottom: 16px; font-size: 15px; color: #333;">满分图例参考</h4>
+                    <div ref="fullHappinessChartRef" style="width: 500px; height: 500px;"></div>
+                  </div>
+                </div>
+
+                <!-- 文字分析 -->
+                <a-descriptions bordered size="small" :column="1" v-if="happinessAnalysis">
+                  <a-descriptions-item label="详细分析" :labelStyle="{ width: '200px' }">
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                      <a-alert 
+                        v-if="happinessAnalysis.highScoreText" 
+                        type="info" 
+                        show-icon
+                        style="line-height: 1.8;"
+                      >
+                        <template #message>
+                          <span style="font-size: 13px;">{{ happinessAnalysis.highScoreText }}</span>
+                        </template>
+                      </a-alert>
+                      
+                      <a-alert 
+                        v-if="happinessAnalysis.lowScoreText" 
+                        type="warning" 
+                        show-icon
+                        style="line-height: 1.8;"
+                      >
+                        <template #message>
+                          <span style="font-size: 13px;">{{ happinessAnalysis.lowScoreText }}</span>
+                        </template>
+                      </a-alert>
+
+                      <div v-if="!happinessAnalysis.highScoreText && !happinessAnalysis.lowScoreText" style="color: #52c41a;">
+                        ✅ 用户各项幸福力指标表现优秀，保持良好！
+                      </div>
+                    </div>
+                  </a-descriptions-item>
+                </a-descriptions>
+              </a-card>
+              <a-alert v-else message="暂无幸福力测评数据" type="info" show-icon class="mb-4" />
 
               <!-- MV值 -->
               <a-descriptions bordered column="1" :labelStyle="{ width: '200px' }">
@@ -688,14 +730,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, onBeforeUnmount, computed, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { message } from 'ant-design-vue';
 import { QuestionCircleOutlined } from '@ant-design/icons-vue';
 import axios from 'axios';
+import * as echarts from 'echarts';
 import * as options from '../../constants/member-options';
 import { calculateEnneagramMatch, ENNEAGRAM_LABELS, type EnneagramMatchResult } from '../../utils/enneagram-match';
 import { getAttachmentTypeInfo, getDimensionDescription } from '../../utils/attachment-info';
+import { getHappinessChartOption, generateHappinessAnalysis, type HappinessAnalysis } from '../../utils/happiness-config';
 
 const route = useRoute();
 const router = useRouter();
@@ -707,6 +751,12 @@ const calculating = ref(false);
 const activeTab = ref('profile');
 const matchmakers = ref<any[]>([]);
 const userInfo = JSON.parse(localStorage.getItem('admin_user') || '{}');
+
+// 幸福力图表refs
+const userHappinessChartRef = ref<HTMLElement | null>(null);
+const fullHappinessChartRef = ref<HTMLElement | null>(null);
+let userHappinessChart: echarts.ECharts | null = null;
+let fullHappinessChart: echarts.ECharts | null = null;
 
 // 权限判断
 const canAssignMatchmaker = computed(() => {
@@ -816,6 +866,49 @@ const attachmentDetailInfo = computed(() => {
   };
 });
 
+// 获取幸福力文字分析
+const happinessAnalysis = computed<HappinessAnalysis | null>(() => {
+  if (!assessmentResults.happiness?.resultData?.dimensions) {
+    return null;
+  }
+  
+  return generateHappinessAnalysis(assessmentResults.happiness.resultData.dimensions);
+});
+
+// 初始化幸福力图表
+const initHappinessCharts = async () => {
+  // 等待DOM更新
+  await nextTick();
+  
+  if (!assessmentResults.happiness?.resultData?.dimensions) {
+    return;
+  }
+  
+  if (!userHappinessChartRef.value || !fullHappinessChartRef.value) {
+    return;
+  }
+  
+  const dimensions = assessmentResults.happiness.resultData.dimensions;
+  
+  // 清理旧图表
+  if (userHappinessChart) {
+    userHappinessChart.dispose();
+  }
+  if (fullHappinessChart) {
+    fullHappinessChart.dispose();
+  }
+  
+  // 初始化用户得分图表
+  userHappinessChart = echarts.init(userHappinessChartRef.value);
+  const userOption = getHappinessChartOption(dimensions, false);
+  userHappinessChart.setOption(userOption);
+  
+  // 初始化满分图例
+  fullHappinessChart = echarts.init(fullHappinessChartRef.value);
+  const fullOption = getHappinessChartOption(dimensions, true);
+  fullHappinessChart.setOption(fullOption);
+};
+
 // 获取详情
 const fetchProfile = async () => {
   loading.value = true;
@@ -838,6 +931,11 @@ const fetchProfile = async () => {
       assessmentResults.enneagram = data.assessmentResults.enneagram;
       assessmentResults.attachment = data.assessmentResults.attachment;
       assessmentResults.happiness = data.assessmentResults.happiness;
+      
+      // 初始化幸福力图表
+      if (data.assessmentResults.happiness) {
+        await initHappinessCharts();
+      }
     }
     
     // 如果是门店管理员或超管，且有storeId，加载该门店的红娘列表
@@ -973,6 +1071,18 @@ const getAttachmentSummary = (record: any) => {
 onMounted(() => {
   if (userId) {
     fetchProfile();
+  }
+});
+
+onBeforeUnmount(() => {
+  // 清理图表实例
+  if (userHappinessChart) {
+    userHappinessChart.dispose();
+    userHappinessChart = null;
+  }
+  if (fullHappinessChart) {
+    fullHappinessChart.dispose();
+    fullHappinessChart = null;
   }
 });
 </script>
