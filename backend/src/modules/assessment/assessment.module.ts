@@ -3,12 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssessmentController } from './assessment.controller';
 import { AssessmentService } from './assessment.service';
 import { AssessmentRecord } from '../../entities/assessment-record.entity';
+import { UserProfile } from '../../entities/user-profile.entity';
 import { EnneagramCalculator } from './calculators/enneagram.calculator';
 import { AttachmentCalculator } from './calculators/attachment.calculator';
 import { HappinessCalculator } from './calculators/happiness.calculator';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AssessmentRecord])],
+  imports: [TypeOrmModule.forFeature([AssessmentRecord, UserProfile])],
   controllers: [AssessmentController],
   providers: [
     AssessmentService,

@@ -132,9 +132,23 @@ export class MvService {
     const education = baseInfo.education;
     const family = extInfo.parentsMaritalStatus;
 
-    // 性格匹配度：暂时设为0，等匹配功能实现后再填充真实数据
-    // TODO: 在匹配时根据九型人格匹配矩阵计算实际的匹配度
-    const personality = 0;
+    // 性格匹配度：从九型人格测评结果中读取可匹配异性数量
+    let personality = 0; // 默认为0（未测评）
+    try {
+      const enneagramRecord = await this.assessmentRepository.findOne({
+        where: { userId, type: 1, isLatest: 1 }, // type=1 九型人格
+        order: { createdAt: 'DESC' },
+      });
+
+      if (enneagramRecord && enneagramRecord.resultData) {
+        // 读取可匹配异性类型数量
+        const resultData = enneagramRecord.resultData as any;
+        personality = resultData.matchableOppositeCount || 0;
+      }
+    } catch (error) {
+      // 如果查询失败，使用默认值0
+      console.warn(`查询用户 ${userId} 九型人格测评结果失败:`, error);
+    }
 
     return {
       age: this.evaluateDimension(age, scheme.female[FemaleMvDimension.AGE]),

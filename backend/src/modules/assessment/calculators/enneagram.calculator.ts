@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ENNEAGRAM_QUESTIONS } from '../../../constants/questions/enneagram';
+import {
+  calculateMatchableOppositeCount,
+  getMatchableOppositeTypes,
+} from '../../../utils/enneagram-match.util';
 
 /**
  * 九型人格计算结果
@@ -9,6 +13,8 @@ export interface EnneagramResult {
   percentages: Record<number, number>; // 各人格类型百分比 {1: 0.85, 2: 0.72, ...}
   rawScores: Record<number, number>; // 各人格类型原始得分
   primaryType: number; // 主导人格类型
+  matchableOppositeTypes?: number[]; // 可匹配的异性类型列表 (用于展示)
+  matchableOppositeCount?: number; // 可匹配的异性类型数量 (用于女性MV值计算)
 }
 
 /**
@@ -19,8 +25,12 @@ export class EnneagramCalculator {
   /**
    * 计算九型人格测评结果
    * @param answers 用户答案数组 [{questionId: 1, selectedType: 5}, ...]
+   * @param userGender 用户性别 ('男' | '女') - 可选，用于计算可匹配异性数量
    */
-  calculate(answers: Array<{ questionId: number; selectedType: number }>): EnneagramResult {
+  calculate(
+    answers: Array<{ questionId: number; selectedType: number }>,
+    userGender?: '男' | '女',
+  ): EnneagramResult {
     // 1. 统计每个人格类型的实际得分
     const rawScores: Record<number, number> = {
       1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0,
@@ -69,11 +79,22 @@ export class EnneagramCalculator {
     const qualifiedTypes = sortedTypes.filter((type) => percentages[type] >= threshold);
     const top3 = qualifiedTypes.length >= 3 ? qualifiedTypes.slice(0, 3) : sortedTypes.slice(0, 3);
 
+    // 6. 如果提供了性别，计算可匹配的异性类型数量（用于女性MV值计算）
+    let matchableOppositeTypes: number[] | undefined;
+    let matchableOppositeCount: number | undefined;
+
+    if (userGender) {
+      matchableOppositeTypes = getMatchableOppositeTypes(top3, userGender);
+      matchableOppositeCount = matchableOppositeTypes.length;
+    }
+
     return {
       top3,
       percentages,
       rawScores,
       primaryType: top3[0],
+      matchableOppositeTypes,
+      matchableOppositeCount,
     };
   }
 }

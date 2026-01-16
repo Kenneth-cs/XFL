@@ -697,18 +697,128 @@
               <a-alert v-else message="暂无幸福力测评数据" type="info" show-icon class="mb-4" />
 
               <!-- MV值 -->
-              <a-descriptions bordered column="1" :labelStyle="{ width: '200px' }">
-                <a-descriptions-item label="MV值 (后台计算)">
-                  <div v-if="formState.mvScore">
-                    <span class="text-lg font-bold text-red-500">{{ formState.mvScore }}</span> 分
-                    <a-button type="link" size="small" @click="handleCalculateMv" :loading="calculating">重新计算</a-button>
-                  </div>
-                  <div v-else class="text-gray-400">
-                    暂未计算 
-                    <a-button type="primary" size="small" @click="handleCalculateMv" :loading="calculating">立即计算</a-button>
-                  </div>
-                </a-descriptions-item>
-              </a-descriptions>
+              <a-card type="inner" title="MV值 (后台计算)" class="mb-4">
+                <a-descriptions bordered column="1" :labelStyle="{ width: '200px' }">
+                  <a-descriptions-item label="MV总分">
+                    <div v-if="formState.mvScore !== null && formState.mvScore !== undefined" style="display: flex; align-items: center; gap: 16px;">
+                      <span style="font-size: 20px; font-weight: bold; color: #f5222d;">{{ Number(formState.mvScore).toFixed(2) }}</span>
+                      <span style="color: #666;">分</span>
+                      <a-button type="link" size="small" @click="handleCalculateMv" :loading="calculating">重新计算</a-button>
+                    </div>
+                    <div v-else class="text-gray-400">
+                      暂未计算 
+                      <a-button type="primary" size="small" @click="handleCalculateMv" :loading="calculating">立即计算</a-button>
+                    </div>
+                  </a-descriptions-item>
+
+                  <!-- 维度详细得分 -->
+                  <a-descriptions-item label="各维度得分详情" v-if="formState.mvDetail">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                      <!-- 男性维度 -->
+                      <template v-if="formState.baseInfo.gender === '男'">
+                        <div v-if="formState.mvDetail.age" class="mv-dimension-item">
+                          <span class="dimension-label">年龄:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.age.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.age.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.age.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.height" class="mv-dimension-item">
+                          <span class="dimension-label">身高:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.height.value || '-' }}cm</span>
+                          <span class="dimension-score">{{ formState.mvDetail.height.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.height.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.appearance" class="mv-dimension-item">
+                          <span class="dimension-label">长相:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.appearance.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.appearance.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.appearance.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.wealth" class="mv-dimension-item">
+                          <span class="dimension-label">财富:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.wealth.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.wealth.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.wealth.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.intelligence" class="mv-dimension-item">
+                          <span class="dimension-label">智商:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.intelligence.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.intelligence.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.intelligence.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.eq" class="mv-dimension-item">
+                          <span class="dimension-label">情商:</span>
+                          <span class="dimension-value">{{ Array.isArray(formState.mvDetail.eq.value) ? formState.mvDetail.eq.value.join('、') : formState.mvDetail.eq.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.eq.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.eq.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.sexual_ability" class="mv-dimension-item">
+                          <span class="dimension-label">性能力:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.sexual_ability.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.sexual_ability.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.sexual_ability.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.commitment" class="mv-dimension-item">
+                          <span class="dimension-label">长期专一承诺:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.commitment.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.commitment.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.commitment.label || '未评' }})</span>
+                        </div>
+                      </template>
+
+                      <!-- 女性维度 -->
+                      <template v-else-if="formState.baseInfo.gender === '女'">
+                        <div v-if="formState.mvDetail.age" class="mv-dimension-item">
+                          <span class="dimension-label">年龄:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.age.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.age.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.age.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.bmi" class="mv-dimension-item">
+                          <span class="dimension-label">BMI:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.bmi.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.bmi.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.bmi.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.appearance" class="mv-dimension-item">
+                          <span class="dimension-label">长相:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.appearance.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.appearance.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.appearance.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.bra_cup" class="mv-dimension-item">
+                          <span class="dimension-label">罩杯:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.bra_cup.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.bra_cup.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.bra_cup.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.education" class="mv-dimension-item">
+                          <span class="dimension-label">学历:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.education.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.education.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.education.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.personality" class="mv-dimension-item">
+                          <span class="dimension-label">性格:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.personality.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.personality.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.personality.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.family" class="mv-dimension-item">
+                          <span class="dimension-label">家庭环境:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.family.value || '-' }}</span>
+                          <span class="dimension-score">{{ formState.mvDetail.family.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.family.label || '未评' }})</span>
+                        </div>
+                      </template>
+
+                      <div v-else style="color: #999; font-size: 13px;">
+                        请先设置用户性别后重新计算
+                      </div>
+                    </div>
+                  </a-descriptions-item>
+                </a-descriptions>
+              </a-card>
             </a-card>
 
           </a-form>
@@ -763,7 +873,15 @@ const canAssignMatchmaker = computed(() => {
   return ['super_admin', 'admin', 'manager'].includes(userInfo.role);
 });
 
-const formState = reactive({
+const formState = reactive<{
+  userId: string
+  phone: string
+  serviceMatchmakerId: string | undefined
+  mvScore: number | null
+  mvDetail: any
+  baseInfo: any
+  extInfo: any
+}>({
   userId: '',
   phone: '',
   serviceMatchmakerId: undefined,
@@ -1098,6 +1216,40 @@ onBeforeUnmount(() => {
 }
 .mb-4 {
   margin-bottom: 16px;
+}
+
+/* MV维度得分样式 */
+.mv-dimension-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #fafafa;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.dimension-label {
+  min-width: 100px;
+  font-weight: 600;
+  color: #333;
+}
+
+.dimension-value {
+  min-width: 120px;
+  color: #666;
+}
+
+.dimension-score {
+  min-width: 60px;
+  font-weight: bold;
+  color: #1890ff;
+  font-size: 14px;
+}
+
+.dimension-desc {
+  color: #999;
+  font-size: 12px;
 }
 </style>
 

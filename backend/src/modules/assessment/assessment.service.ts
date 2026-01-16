@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AssessmentRecord } from '../../entities/assessment-record.entity';
+import { UserProfile } from '../../entities/user-profile.entity';
 import { EnneagramCalculator } from './calculators/enneagram.calculator';
 import { AttachmentCalculator } from './calculators/attachment.calculator';
 import { HappinessCalculator } from './calculators/happiness.calculator';
@@ -19,6 +20,8 @@ export class AssessmentService {
   constructor(
     @InjectRepository(AssessmentRecord)
     private readonly assessmentRecordRepository: Repository<AssessmentRecord>,
+    @InjectRepository(UserProfile)
+    private readonly userProfileRepository: Repository<UserProfile>,
     private readonly enneagramCalculator: EnneagramCalculator,
     private readonly attachmentCalculator: AttachmentCalculator,
     private readonly happinessCalculator: HappinessCalculator,
@@ -55,16 +58,22 @@ export class AssessmentService {
   async submitEnneagram(dto: SubmitEnneagramDto) {
     this.logger.log(`用户 ${dto.userId} 提交九型人格测评，共 ${dto.answers.length} 题`);
 
-    // 1. 计算结果
-    const result = this.enneagramCalculator.calculate(dto.answers);
+    // 1. 获取用户性别（用于计算可匹配异性数量，女性MV值计算需要）
+    const userProfile = await this.userProfileRepository.findOne({
+      where: { userId: dto.userId },
+    });
+    const userGender = userProfile?.baseInfo?.['gender'] as '男' | '女' | undefined;
 
-    // 2. 设置旧记录为非最新
+    // 2. 计算结果
+    const result = this.enneagramCalculator.calculate(dto.answers, userGender);
+
+    // 3. 设置旧记录为非最新
     await this.assessmentRecordRepository.update(
       { userId: dto.userId, type: 1, isLatest: 1 },
       { isLatest: 0 },
     );
 
-    // 3. 保存新记录
+    // 4. 保存新记录
     const record = this.assessmentRecordRepository.create({
       userId: dto.userId,
       type: 1, // 九型人格
