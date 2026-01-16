@@ -516,7 +516,7 @@
                 <a-descriptions bordered size="small" :column="1" :labelStyle="{ width: '200px' }">
                   <!-- 依恋类型 -->
                   <a-descriptions-item label="依恋类型">
-                    <div v-if="assessmentResults.attachment.resultData?.type === '得分不足'">
+                    <div v-if="assessmentResults.attachment.resultData?.type === '得分不足' || assessmentResults.attachment.resultData?.type?.includes('待进一步沟通')">
                       <a-alert 
                         message="得分不足" 
                         description="三个维度得分都低于5分，无法给出具体的依恋类型" 

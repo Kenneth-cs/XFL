@@ -7,7 +7,7 @@
 
     <div class="result-content" v-if="result">
       <!-- 依恋类型卡片 -->
-      <div v-if="result.type === '得分不足'" class="type-card type-insufficient">
+      <div v-if="result.type === '得分不足' || result.type.includes('待进一步沟通')" class="type-card type-insufficient">
         <p class="intro-text">您在《幸福力婚恋关系测试》中显示是：</p>
         <div class="insufficient-notice">
           <van-icon name="info-o" size="24" color="#fa8c16" />
