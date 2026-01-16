@@ -58,36 +58,73 @@ export class MatchService {
     const targetGender = initiatorGender === '男' ? '女' : '男';
 
     // 2. 筛选候选人 (初步筛选: 门店, 性别, 基础条件)
+    // 注意：由于共享主键一对一关系加载问题，这里手动加载 profile
     const qb = this.userRepo.createQueryBuilder('user')
-      .leftJoinAndSelect('user.profile', 'profile')
       .where('user.storeId = :storeId', { storeId: initiator.storeId })
-      .andWhere('user.id != :initiatorId', { initiatorId })
-      .andWhere("JSON_UNQUOTE(JSON_EXTRACT(profile.base_info, '$.gender')) = :targetGender", { targetGender });
+      .andWhere('user.id != :initiatorId', { initiatorId });
 
-    // 年龄筛选
-    if (criteria.ageMin !== undefined) {
-      qb.andWhere("TIMESTAMPDIFF(YEAR, STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(profile.base_info, '$.birthday')), '%Y-%m-%d'), CURDATE()) >= :ageMin", { ageMin: criteria.ageMin });
-    }
-    if (criteria.ageMax !== undefined) {
-      qb.andWhere("TIMESTAMPDIFF(YEAR, STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(profile.base_info, '$.birthday')), '%Y-%m-%d'), CURDATE()) <= :ageMax", { ageMax: criteria.ageMax });
-    }
+    const users = await qb.getMany();
 
-    // 身高筛选
-    if (criteria.heightMin !== undefined) {
-      qb.andWhere("CAST(JSON_UNQUOTE(JSON_EXTRACT(profile.base_info, '$.height')) AS UNSIGNED) >= :heightMin", { heightMin: criteria.heightMin });
+    // 手动批量加载 profile
+    const userIds = users.map(u => u.id);
+    let profiles: AppUserProfile[] = [];
+    if (userIds.length > 0) {
+      profiles = await this.profileRepo.findByIds(userIds);
     }
-    if (criteria.heightMax !== undefined) {
-      qb.andWhere("CAST(JSON_UNQUOTE(JSON_EXTRACT(profile.base_info, '$.height')) AS UNSIGNED) <= :heightMax", { heightMax: criteria.heightMax });
-    }
+    const profileMap = new Map(profiles.map(p => [p.userId, p]));
+    users.forEach(u => {
+      u.profile = profileMap.get(u.id);
+    });
 
-    // 学历筛选 (需转换成等级比较? 这里简化为精确匹配或范围匹配，如果学历是枚举，范围比较比较难，暂且假设是包含关系或后续处理)
-    // 需求: "最低学历-最高学历" 层级。需要映射学历到数字等级。
-    // "大专以下": 1, "大专": 2, "二本": 3, "普通一本": 4, "211大学": 5, "985或更高": 6
-    const eduLevels = { '大专以下': 1, '大专': 2, '本科': 3, '二本': 3, '普通一本': 4, '一本': 4, '硕士': 5, '211大学': 5, '博士': 6, '985或更高': 6 };
-    // 实际数据可能是 "二本", "普通一本" 等。
-    // 这里先不做复杂的SQL层级筛选，或者全部查出来内存筛选。鉴于候选人数量可能不多 (单店)，内存筛选可行。
-    
-    const candidates = await qb.getMany();
+    // 学历等级映射
+    const eduLevels = { 
+      '高中及以下': 1, '大专以下': 1, 
+      '大专': 2, 
+      '二本': 3, '本科': 3, 
+      '普通一本': 4, '一本': 4, 
+      '硕士': 5, '211大学': 5, 
+      '博士': 6, '985或更高': 6 
+    };
+    const getEduLevel = (edu: string) => eduLevels[edu] || 0;
+    const minEduLevel = criteria.educationMin ? getEduLevel(criteria.educationMin) : 0;
+    const maxEduLevel = criteria.educationMax ? getEduLevel(criteria.educationMax) : 99;
+
+    // 内存筛选
+    const candidates = users.filter(user => {
+      const profile = user.profile;
+      if (!profile || !profile.baseInfo) return false;
+
+      const baseInfo = profile.baseInfo;
+
+      // 性别筛选
+      if (baseInfo.gender !== targetGender) return false;
+
+      // 年龄筛选
+      if (criteria.ageMin !== undefined || criteria.ageMax !== undefined) {
+        const birthday = baseInfo.birthday;
+        if (!birthday) return false;
+        const age = new Date().getFullYear() - new Date(birthday).getFullYear();
+        if (criteria.ageMin !== undefined && age < criteria.ageMin) return false;
+        if (criteria.ageMax !== undefined && age > criteria.ageMax) return false;
+      }
+
+      // 身高筛选
+      if (criteria.heightMin !== undefined || criteria.heightMax !== undefined) {
+        const height = Number(baseInfo.height);
+        if (!height) return false;
+        if (criteria.heightMin !== undefined && height < criteria.heightMin) return false;
+        if (criteria.heightMax !== undefined && height > criteria.heightMax) return false;
+      }
+
+      // 学历筛选
+      if (criteria.educationMin || criteria.educationMax) {
+        const edu = baseInfo.education;
+        const level = getEduLevel(edu);
+        if (level < minEduLevel || level > maxEduLevel) return false;
+      }
+
+      return true;
+    });
 
     // 3. 内存精细筛选 & 排除
     // 获取已存在的服务轨迹 (initiator <-> candidate)
@@ -116,22 +153,12 @@ export class MatchService {
     }
     const enneagramMap = new Map(candidateEnneagrams.map(e => [e.userId, e.resultData]));
 
-    // 处理学历等级映射 (用于筛选)
-    const getEduLevel = (edu: string) => eduLevels[edu] || 0;
-    const minEduLevel = criteria.educationMin ? getEduLevel(criteria.educationMin) : 0;
-    const maxEduLevel = criteria.educationMax ? getEduLevel(criteria.educationMax) : 99;
-
     for (const candidate of candidates) {
-      // 排除
+      // 排除已有服务轨迹的用户
       if (excludedIds.has(candidate.id)) continue;
 
       const profile = candidate.profile;
       if (!profile) continue;
-
-      // 学历筛选
-      const edu = profile.baseInfo?.education;
-      const level = getEduLevel(edu);
-      if (level < minEduLevel || level > maxEduLevel) continue;
 
       // 4. 匹配运算
       const candidateMv = Number(profile.mvScore) || 0;

@@ -271,18 +271,19 @@ const educationOptions = ['大专以下', '大专', '二本', '普通一本', '2
 const fetchMatches = async () => {
   loading.value = true;
   try {
+    // 注意：axios 响应拦截器已自动解包 response.data，所以 res 就是后端返回的数据对象
     const res = await axios.get('/matches', {
       params: {
         ...searchForm,
         page: page.value,
         limit: limit.value
       }
-    });
-    const data = res.data || res;
-    batches.value = data.items || [];
-    total.value = data.total || 0;
+    }) as any;
+    console.log('🔍 [获取匹配列表] 响应数据:', res);
+    batches.value = res.items || res || [];
+    total.value = res.total || 0;
   } catch (error) {
-    console.error('获取匹配列表失败', error);
+    console.error('❌ [获取匹配列表失败]', error);
     message.error('获取匹配列表失败');
   } finally {
     loading.value = false;
@@ -325,30 +326,29 @@ const searchUser = async (value: string) => {
   searchUsers.value = [];
   try {
     // 使用前台用户列表接口
-    const res = await axios.get('/users/app', { params: { page: 1, limit: 50 } });
+    // 注意：axios 响应拦截器已自动解包 response.data，所以 res 就是后端返回的数据对象
+    const res = await axios.get('/users/app', { params: { page: 1, limit: 50 } }) as any;
     
-    // 🚨 健壮性修复：兼容多种响应结构
-    // 1. 标准 Axios + 后端包裹: res.data.data
-    // 2. 拦截器解包后: res.data
-    // 3. 直接返回数组: res.data
+    console.log('🔍 [搜索用户] 响应数据:', res);
+    console.log('🔍 [搜索用户] 数据类型:', typeof res);
+    
+    // 后端返回格式: { data: [...], total: 5, page: 1, limit: 50 }
     let allUsers: any[] = [];
-    const body = res.data || res; // 获取响应体
     
-    if (Array.isArray(body)) {
-      allUsers = body;
-    } else if (Array.isArray(body.data)) {
-      allUsers = body.data;
-    } else if (Array.isArray(body.items)) {
-      allUsers = body.items;
+    if (Array.isArray(res.data)) {
+      allUsers = res.data;
+    } else if (Array.isArray(res)) {
+      allUsers = res;
+    } else {
+      console.warn('⚠️ [搜索用户] 未能识别的响应结构:', res);
     }
 
-    console.log('🔍 [Debug] 响应体结构 keys:', Object.keys(body));
-    console.log('🔍 [Debug] 提取到的用户列表长度:', allUsers.length);
+    console.log('🔍 [搜索用户] 提取到的用户列表长度:', allUsers.length);
 
     if (allUsers.length > 0) {
-      console.log('🔍 [Debug] 第一个用户示例:', allUsers[0]);
+      console.log('🔍 [搜索用户] 第一个用户示例:', allUsers[0]);
     } else {
-      console.warn('⚠️ [Debug] 未能提取到用户数据，请检查响应结构');
+      console.warn('⚠️ [搜索用户] 未能提取到用户数据');
     }
 
     // 在前端过滤匹配的用户（姓名、手机号、用户ID）
@@ -388,23 +388,48 @@ const handleUserSelect = (val: string) => {
 };
 
 const handleInitiateMatch = async () => {
+  console.log('🚀 [开始发起匹配]');
+  
   if (!initiateForm.initiatorId) {
     message.warning('请选择发起人');
     return;
   }
   
+  const payload = {
+    initiatorId: initiateForm.initiatorId,
+    criteria: initiateForm.criteria
+  };
+  console.log('📤 [请求数据]', JSON.stringify(payload, null, 2));
+  
   initiating.value = true;
   try {
-    const res = await axios.post('/matches/initiate', {
-      initiatorId: initiateForm.initiatorId,
-      criteria: initiateForm.criteria
-    });
+    console.log('⏳ [发送POST请求] /matches/initiate');
+    // 注意：axios 响应拦截器已自动解包 response.data，所以 res 就是后端返回的数据对象
+    const res = await axios.post('/matches/initiate', payload) as any;
+    console.log('✅ [匹配成功] 响应数据:', res);
+    console.log('✅ [匹配成功] 数据类型:', typeof res);
     
-    message.success(`匹配完成，共找到 ${res.data.count || 0} 位候选人`);
+    if (!res) {
+      console.error('❌ [数据异常] res 为空');
+      message.error('服务器响应格式异常');
+      return;
+    }
+    
+    const count = res.count || 0;  // ✅ 修复：直接访问 res.count，而不是 res.data.count
+    console.log(`✅ [匹配完成] 找到 ${count} 位候选人`);
+    
+    message.success(`匹配完成，共找到 ${count} 位候选人`);
     initiateModalVisible.value = false;
     fetchMatches();
   } catch (error: any) {
-    message.error(error.response?.data?.message || '发起匹配失败');
+    console.error('❌ [匹配失败] 完整错误对象:', error);
+    console.error('❌ [匹配失败] 错误类型:', error?.name);
+    console.error('❌ [匹配失败] 响应状态:', error.response?.status);
+    console.error('❌ [匹配失败] 响应数据:', error.response?.data);
+    console.error('❌ [匹配失败] 错误信息:', error.message);
+    console.error('❌ [匹配失败] 请求URL:', error.config?.url);
+    
+    message.error(error.response?.data?.message || error.message || '发起匹配失败');
   } finally {
     initiating.value = false;
   }
