@@ -16,6 +16,9 @@ export const ENNEAGRAM_LABELS: Record<number, string> = {
   9: '和平型',
 }
 
+// 导出别名，兼容其他模块调用
+export const ENNEAGRAM_TYPE_NAMES = ENNEAGRAM_LABELS;
+
 // 九型人格匹配矩阵
 // 行索引: 男性类型 (1-9), 列索引: 女性类型 (1-9)
 // 返回值: +1 合适, 0 一般, -1 不合适

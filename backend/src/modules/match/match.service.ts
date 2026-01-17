@@ -234,36 +234,30 @@ export class MatchService {
   async getMatches(dto: MatchQueryDto) {
     const qb = this.batchRepo.createQueryBuilder('batch')
       .leftJoinAndSelect('batch.initiator', 'initiator')
-      .leftJoinAndSelect('initiator.profile', 'iProfile')
       .leftJoinAndSelect('batch.details', 'details')
       .leftJoinAndSelect('details.candidate', 'candidate')
-      .leftJoinAndSelect('candidate.profile', 'cProfile')
       .orderBy('batch.createdAt', 'DESC');
 
     // 发起人筛选
     if (dto.initiatorId) {
       qb.andWhere('batch.initiatorId LIKE :iId', { iId: `%${dto.initiatorId}%` });
     }
-    if (dto.initiatorName) {
-      qb.andWhere("JSON_UNQUOTE(JSON_EXTRACT(iProfile.base_info, '$.name')) LIKE :iName", { iName: `%${dto.initiatorName}%` });
-    }
+    // 注意：手动加载 profile 后，name 筛选需要调整
     if (dto.initiatorPhone) {
       qb.andWhere('initiator.phone LIKE :iPhone', { iPhone: `%${dto.initiatorPhone}%` });
     }
 
-    // 候选人筛选 (复杂: 需要筛选 details 中的 candidate)
+    // 候选人筛选
     if (dto.candidateId || dto.candidateName || dto.candidatePhone) {
       qb.andWhere(qb => {
         const subQuery = qb.subQuery()
           .select('d.batch_id')
           .from(MatchDetail, 'd')
-          .leftJoin('d.candidate', 'c')
-          .leftJoin('c.profile', 'cp');
+          .leftJoin('d.candidate', 'c');
         
         const conditions = [];
         if (dto.candidateId) conditions.push(`d.candidate_id LIKE '%${dto.candidateId}%'`);
         if (dto.candidatePhone) conditions.push(`c.phone LIKE '%${dto.candidatePhone}%'`);
-        if (dto.candidateName) conditions.push(`JSON_UNQUOTE(JSON_EXTRACT(cp.base_info, '$.name')) LIKE '%${dto.candidateName}%'`);
         
         return 'batch.id IN ' + subQuery.where(conditions.join(' AND ')).getQuery();
       });
@@ -275,7 +269,70 @@ export class MatchService {
     // 分页
     qb.skip((page - 1) * limit).take(limit);
 
-    const [items, total] = await qb.getManyAndCount();
+    const [batches, total] = await qb.getManyAndCount();
+
+    // 收集所有用户ID (发起人 + 候选人)
+    const userIds = new Set<string>();
+    batches.forEach(b => {
+      if (b.initiatorId) userIds.add(b.initiatorId);
+      b.details?.forEach(d => {
+        if (d.candidateId) userIds.add(d.candidateId);
+      });
+    });
+
+    if (userIds.size === 0) {
+      return { items: [], total, page, limit };
+    }
+
+    console.log(`🔍 [getMatches] 准备查询用户档案和幸福力数据，用户ID数量: ${userIds.size}`);
+    console.log(`🔍 [getMatches] 用户ID示例: ${Array.from(userIds).slice(0, 3).join(', ')}`);
+
+    // 批量加载 Profile
+    const profiles = await this.profileRepo.find({
+      where: { userId: In(Array.from(userIds)) }
+    });
+    const profileMap = new Map(profiles.map(p => [p.userId, p]));
+    
+    console.log(`🔍 [getMatches] 查询到档案数: ${profiles.length}`);
+
+    // 批量加载最新幸福力测评 (Type=3)
+    // 调试：打印查询条件
+    const happinessQuery = this.assessmentRepo.createQueryBuilder('record')
+      .where('record.userId IN (:...ids)', { ids: Array.from(userIds) })
+      .andWhere('record.type = :type', { type: 3 })
+      .andWhere('record.isLatest = :latest', { latest: 1 });
+    
+    console.log(`🔍 [getMatches] 幸福力查询SQL: ${happinessQuery.getSql()}`);
+
+    const happinessRecords = await happinessQuery.getMany();
+    
+    console.log(`🔍 [getMatches] 查询到幸福力记录数: ${happinessRecords.length}`);
+    if (happinessRecords.length > 0) {
+      console.log(`🔍 [getMatches] 第一条记录示例: ID=${happinessRecords[0].id}, UserID=${happinessRecords[0].userId}`);
+    }
+
+    const happinessMap = new Map(happinessRecords.map(r => [r.userId, r.resultData]));
+
+    // 拼装数据
+    const items = batches.map(batch => {
+      // 拼装发起人信息
+      if (batch.initiator) {
+        batch.initiator.profile = profileMap.get(batch.initiatorId);
+        (batch.initiator as any).happiness = happinessMap.get(batch.initiatorId);
+      }
+
+      // 拼装候选人信息
+      if (batch.details) {
+        batch.details.forEach(detail => {
+          if (detail.candidate) {
+            detail.candidate.profile = profileMap.get(detail.candidateId);
+            (detail.candidate as any).happiness = happinessMap.get(detail.candidateId);
+          }
+        });
+      }
+      
+      return JSON.parse(JSON.stringify(batch));
+    });
 
     return {
       items,

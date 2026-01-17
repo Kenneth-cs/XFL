@@ -43,77 +43,117 @@
         <a-empty v-if="!loading && batches.length === 0" description="暂无匹配记录" />
         
         <div v-for="batch in batches" :key="batch.id" class="match-batch-card">
-        <!-- 批次头部 -->
-        <div class="batch-header">
-          <div class="batch-time">
-            <ClockCircleOutlined /> 匹配时间：{{ formatTime(batch.createdAt) }}
+          <!-- 批次头部 -->
+          <div class="batch-header">
+            <div class="batch-time">
+              <ClockCircleOutlined /> 匹配时间：{{ formatTime(batch.createdAt) }}
+            </div>
+            <div class="batch-id">批次ID: {{ batch.id }}</div>
           </div>
-          <div class="batch-id">批次ID: {{ batch.id }}</div>
-        </div>
 
-        <!-- 发起方信息 -->
-        <div class="initiator-section">
-          <div class="section-label">发起方：</div>
-          <div class="user-info">
-            <span class="user-name">{{ getProfileName(batch.initiator) }}</span>
-            <span class="user-gender">
-              <ManOutlined v-if="getGender(batch.initiator) === '男'" style="color: #1890ff" />
-              <WomanOutlined v-else style="color: #eb2f96" />
-            </span>
-            <span class="user-id">(ID: {{ batch.initiatorId }})</span>
-            <span class="user-mv">MV: {{ getMvScore(batch.initiator) }}</span>
+          <!-- 发起方信息 -->
+          <div class="initiator-section">
+            <div class="section-label">发起方：</div>
+            <div class="user-info">
+              <span class="user-name">{{ getProfileName(batch.initiator) }}</span>
+              <span class="user-gender">
+                <ManOutlined v-if="getGender(batch.initiator) === '男'" style="color: #1890ff" />
+                <WomanOutlined v-else style="color: #eb2f96" />
+              </span>
+              <span class="user-id">(ID: {{ batch.initiatorId }})</span>
+              <span class="user-mv">MV: {{ getMvScore(batch.initiator) }}</span>
+            </div>
           </div>
+
+          <!-- 候选人列表 -->
+          <a-table 
+            :dataSource="batch.details" 
+            :columns="columns" 
+            :pagination="false" 
+            rowKey="id"
+            size="middle"
+            class="candidates-table"
+          >
+            <!-- 候选人信息 -->
+            <template #bodyCell="{ column, record }">
+              <template v-if="column.key === 'candidate'">
+                <div class="candidate-info">
+                  <span class="name">{{ getProfileName(record.candidate) }}</span>
+                  <span class="id">(ID: {{ record.candidateId }})</span>
+                  <div class="mv-score">MV: {{ getMvScore(record.candidate) }}</div>
+                </div>
+              </template>
+
+              <!-- 幸福力圆环对比 -->
+              <template v-else-if="column.key === 'happiness'">
+                <div class="happiness-compare">
+                  <!-- 发起方 -->
+                  <div class="chart-item">
+                    <span class="chart-label initiator-label">发起方</span>
+                    <div v-if="batch.initiator?.happiness">
+                      <HappinessRing :data="batch.initiator.happiness" width="90px" height="90px" />
+                    </div>
+                    <div v-else class="no-data-mini">暂无</div>
+                  </div>
+                  
+                  <!-- 候选方 -->
+                  <div class="chart-item">
+                    <span class="chart-label candidate-label">候选方</span>
+                    <div v-if="record.candidate?.happiness">
+                      <HappinessRing :data="record.candidate.happiness" width="90px" height="90px" />
+                    </div>
+                    <div v-else class="no-data-mini">暂无</div>
+                  </div>
+                </div>
+              </template>
+
+              <!-- MV匹配结果 -->
+              <template v-else-if="column.key === 'mvMatch'">
+                <div class="match-result">
+                  <div class="result-status">
+                    <span>婚恋价值匹配: </span>
+                    <a-tag :color="record.isMvPass ? 'success' : 'error'">
+                      {{ record.isMvPass ? '通过' : '不通过' }}
+                    </a-tag>
+                  </div>
+                  <div class="match-score">
+                    匹配得分: {{ calculateMvMatchScore(record.mvDiff) }}
+                  </div>
+                  <div class="score-diff">分差: {{ record.mvDiff > 0 ? '+' : '' }}{{ record.mvDiff }}</div>
+                </div>
+              </template>
+
+              <!-- 九型人格匹配结果 -->
+              <template v-else-if="column.key === 'enneagramMatch'">
+                <div class="match-result">
+                  <div class="result-status">
+                    <span>性格匹配: </span>
+                    <a-tag :color="record.isPersonalityPass ? 'success' : 'error'">
+                      {{ record.isPersonalityPass ? '通过' : '不通过' }}
+                    </a-tag>
+                  </div>
+                  <!-- 详细性格信息 -->
+                  <div class="personality-details">
+                    <div v-if="record.matchData?.initiatorTypes" class="types-row">
+                      <span class="label">发起方:</span>
+                      <span class="types">{{ getEnneagramTypes(record.matchData.initiatorTypes) }}</span>
+                    </div>
+                    <div v-if="record.matchData?.candidateTypes" class="types-row">
+                      <span class="label">候选人:</span>
+                      <span class="types">{{ getEnneagramTypes(record.matchData.candidateTypes) }}</span>
+                    </div>
+                    <div class="overlap-count">适合性格重合: {{ record.matchData?.overlapCount || 0 }}项</div>
+                  </div>
+                </div>
+              </template>
+
+              <!-- 操作 -->
+              <template v-else-if="column.key === 'action'">
+                <a-button type="link" size="small" @click="viewDetail(record)">查看详情</a-button>
+              </template>
+            </template>
+          </a-table>
         </div>
-
-        <!-- 候选人列表 -->
-        <a-table 
-          :dataSource="batch.details" 
-          :columns="columns" 
-          :pagination="false" 
-          rowKey="id"
-          size="middle"
-          class="candidates-table"
-        >
-          <!-- 候选人信息 -->
-          <template #bodyCell="{ column, record }">
-            <template v-if="column.key === 'candidate'">
-              <div class="candidate-info">
-                <span class="name">{{ getProfileName(record.candidate) }}</span>
-                <span class="id">(ID: {{ record.candidateId }})</span>
-              </div>
-            </template>
-
-            <!-- 幸福力圆环 (占位) -->
-            <template v-else-if="column.key === 'happiness'">
-              <span style="color: #999; font-size: 12px;">(圆环图)</span>
-            </template>
-
-            <!-- MV匹配结果 -->
-            <template v-else-if="column.key === 'mvMatch'">
-              <div class="match-result">
-                <a-tag :color="record.isMvPass ? 'success' : 'error'">
-                  {{ record.isMvPass ? '通过' : '不通过' }}
-                </a-tag>
-                <div class="score-diff">分差: {{ record.mvDiff > 0 ? '+' : '' }}{{ record.mvDiff }}</div>
-              </div>
-            </template>
-
-            <!-- 九型人格匹配结果 -->
-            <template v-else-if="column.key === 'enneagramMatch'">
-              <div class="match-result">
-                <a-tag :color="record.isPersonalityPass ? 'success' : 'error'">
-                  {{ record.isPersonalityPass ? '通过' : '不通过' }}
-                </a-tag>
-                <div class="overlap-count">重合度: {{ record.matchData?.overlapCount || 0 }}项</div>
-              </div>
-            </template>
-
-            <!-- 操作 -->
-            <template v-else-if="column.key === 'action'">
-              <a-button type="link" size="small" @click="viewDetail(record)">查看详情</a-button>
-            </template>
-          </template>
-        </a-table>
       </div>
 
       <!-- 分页 -->
@@ -126,12 +166,11 @@
           show-size-changer
         />
       </div>
-    </div>
     </a-spin>
 
     <!-- 发起匹配弹窗 -->
     <a-modal
-      v-model:visible="initiateModalVisible"
+      v-model:open="initiateModalVisible"
       title="发起智能匹配"
       width="600px"
       @ok="handleInitiateMatch"
@@ -218,6 +257,8 @@ import { ClockCircleOutlined, ManOutlined, WomanOutlined } from '@ant-design/ico
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { useRouter } from 'vue-router';
+import HappinessRing from '@/components/HappinessRing.vue';
+import { ENNEAGRAM_TYPE_NAMES } from '@/utils/enneagram-match';
 
 const router = useRouter();
 
@@ -239,10 +280,10 @@ const searchForm = reactive({
 
 // 表格列定义
 const columns = [
-  { title: '候选人', key: 'candidate', width: 200 },
-  // { title: '幸福力', key: 'happiness', width: 100 }, // 暂未实现圆环图微缩
-  { title: 'MV匹配', key: 'mvMatch', width: 150 },
-  { title: '性格匹配', key: 'enneagramMatch', width: 150 },
+  { title: '候选人', key: 'candidate', width: 120 },
+  { title: '幸福力对比', key: 'happiness', width: 280, align: 'center' },
+  { title: 'MV匹配', key: 'mvMatch', width: 180 },
+  { title: '性格匹配', key: 'enneagramMatch', width: 220 },
   { title: '操作', key: 'action', width: 100, align: 'right' }
 ];
 
@@ -271,7 +312,6 @@ const educationOptions = ['大专以下', '大专', '二本', '普通一本', '2
 const fetchMatches = async () => {
   loading.value = true;
   try {
-    // 注意：axios 响应拦截器已自动解包 response.data，所以 res 就是后端返回的数据对象
     const res = await axios.get('/matches', {
       params: {
         ...searchForm,
@@ -302,7 +342,6 @@ const handleReset = () => {
 
 // 发起匹配
 const showInitiateModal = () => {
-  // 权限控制：超级管理员不能操作
   const userInfo = JSON.parse(localStorage.getItem('admin_user') || '{}');
   if (userInfo.role === 'super_admin') {
     message.warning('请切换对应门店账号进行操作');
@@ -325,45 +364,24 @@ const searchUser = async (value: string) => {
   fetchingUser.value = true;
   searchUsers.value = [];
   try {
-    // 使用前台用户列表接口
-    // 注意：axios 响应拦截器已自动解包 response.data，所以 res 就是后端返回的数据对象
     const res = await axios.get('/users/app', { params: { page: 1, limit: 50 } }) as any;
     
-    console.log('🔍 [搜索用户] 响应数据:', res);
-    console.log('🔍 [搜索用户] 数据类型:', typeof res);
-    
-    // 后端返回格式: { data: [...], total: 5, page: 1, limit: 50 }
     let allUsers: any[] = [];
-    
     if (Array.isArray(res.data)) {
       allUsers = res.data;
     } else if (Array.isArray(res)) {
       allUsers = res;
-    } else {
-      console.warn('⚠️ [搜索用户] 未能识别的响应结构:', res);
     }
 
-    console.log('🔍 [搜索用户] 提取到的用户列表长度:', allUsers.length);
-
-    if (allUsers.length > 0) {
-      console.log('🔍 [搜索用户] 第一个用户示例:', allUsers[0]);
-    } else {
-      console.warn('⚠️ [搜索用户] 未能提取到用户数据');
-    }
-
-    // 在前端过滤匹配的用户（姓名、手机号、用户ID）
     const filtered = allUsers.filter((u: any) => {
       const name = String(u.profile?.baseInfo?.name || '');
       const phone = String(u.phone || '');
       const userId = String(u.id || '');
       const searchValue = String(value).toLowerCase();
       
-      const match = name.toLowerCase().includes(searchValue) || 
-                    phone.includes(searchValue) || 
-                    userId.toLowerCase().includes(searchValue);
-      
-      console.log(`🔍 匹配检查: ${name} / ${phone} / ${userId} -> ${match}`);
-      return match;
+      return name.toLowerCase().includes(searchValue) || 
+             phone.includes(searchValue) || 
+             userId.toLowerCase().includes(searchValue);
     });
     
     searchUsers.value = filtered.map((u: any) => ({
@@ -388,8 +406,6 @@ const handleUserSelect = (val: string) => {
 };
 
 const handleInitiateMatch = async () => {
-  console.log('🚀 [开始发起匹配]');
-  
   if (!initiateForm.initiatorId) {
     message.warning('请选择发起人');
     return;
@@ -399,36 +415,21 @@ const handleInitiateMatch = async () => {
     initiatorId: initiateForm.initiatorId,
     criteria: initiateForm.criteria
   };
-  console.log('📤 [请求数据]', JSON.stringify(payload, null, 2));
   
   initiating.value = true;
   try {
-    console.log('⏳ [发送POST请求] /matches/initiate');
-    // 注意：axios 响应拦截器已自动解包 response.data，所以 res 就是后端返回的数据对象
     const res = await axios.post('/matches/initiate', payload) as any;
-    console.log('✅ [匹配成功] 响应数据:', res);
-    console.log('✅ [匹配成功] 数据类型:', typeof res);
     
     if (!res) {
-      console.error('❌ [数据异常] res 为空');
       message.error('服务器响应格式异常');
       return;
     }
     
-    const count = res.count || 0;  // ✅ 修复：直接访问 res.count，而不是 res.data.count
-    console.log(`✅ [匹配完成] 找到 ${count} 位候选人`);
-    
+    const count = res.count || 0;
     message.success(`匹配完成，共找到 ${count} 位候选人`);
     initiateModalVisible.value = false;
     fetchMatches();
   } catch (error: any) {
-    console.error('❌ [匹配失败] 完整错误对象:', error);
-    console.error('❌ [匹配失败] 错误类型:', error?.name);
-    console.error('❌ [匹配失败] 响应状态:', error.response?.status);
-    console.error('❌ [匹配失败] 响应数据:', error.response?.data);
-    console.error('❌ [匹配失败] 错误信息:', error.message);
-    console.error('❌ [匹配失败] 请求URL:', error.config?.url);
-    
     message.error(error.response?.data?.message || error.message || '发起匹配失败');
   } finally {
     initiating.value = false;
@@ -450,13 +451,20 @@ const getMvScore = (user: any) => {
   return user?.profile?.mvScore ? Number(user.profile.mvScore).toFixed(1) : '-';
 };
 
+// 简单的匹配得分计算
+const calculateMvMatchScore = (diff: number) => {
+  const absDiff = Math.abs(diff);
+  // 假设 0 分差 = 100分，每差1分减2分，最低0分
+  return Math.max(0, 100 - (absDiff * 2));
+};
+
+const getEnneagramTypes = (types: number[]) => {
+  if (!types || types.length === 0) return '未测试';
+  // 只取 Top 3
+  return types.slice(0, 3).map(t => `${t}号${ENNEAGRAM_TYPE_NAMES[t as keyof typeof ENNEAGRAM_TYPE_NAMES]}`).join(', ');
+};
+
 const viewDetail = (record: any) => {
-  // TODO: 跳转详情
-  // 详情页应该显示 双方信息
-  // 路由: /matches/detail/:id (record.id is matchDetail id)
-  // 暂时先跳转到候选人档案? 不，需求是对比详情。
-  // 我们需要一个新的详情页
-  // router.push({ name: 'MatchDetail', params: { id: record.id } });
   message.info('详情页开发中');
 };
 
@@ -511,6 +519,7 @@ onMounted(() => {
   display: flex;
   gap: 12px;
   align-items: center;
+  flex: 1;
 }
 .user-name {
   font-size: 16px;
@@ -519,6 +528,9 @@ onMounted(() => {
 .user-id, .user-mv {
   color: #666;
   font-size: 13px;
+}
+.initiator-happiness {
+  margin-left: 24px;
 }
 .candidates-table {
   /* :deep(.ant-table-thead > tr > th) {
@@ -536,14 +548,40 @@ onMounted(() => {
   font-size: 12px;
   color: #999;
 }
+.candidate-info .mv-score {
+  font-size: 12px;
+  color: #faad14;
+}
 .match-result {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
+.result-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.match-score {
+  font-weight: bold;
+  color: #1890ff;
+}
 .score-diff, .overlap-count {
   font-size: 12px;
   color: #666;
+}
+.personality-details {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+.types-row {
+  display: flex;
+  gap: 4px;
+}
+.types-row .label {
+  color: #999;
+  min-width: 40px;
 }
 .range-input {
   display: flex;
@@ -564,5 +602,47 @@ onMounted(() => {
 }
 .selected-user-info p {
   margin: 0;
+}
+.happiness-cell {
+  display: flex;
+  justify-content: center;
+}
+.no-data {
+  color: #ccc;
+  font-size: 12px;
+}
+.happiness-compare {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  align-items: center;
+}
+.chart-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.chart-label {
+  font-size: 12px;
+  color: #666;
+}
+.initiator-label {
+  color: #1890ff; /* 蓝色标识发起方 */
+}
+.candidate-label {
+  color: #eb2f96; /* 粉色标识候选方 (或者根据性别动态变色，这里暂固定) */
+}
+.no-data-mini {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 1px dashed #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ccc;
+  font-size: 12px;
+  background: #fafafa;
 }
 </style>
