@@ -698,7 +698,7 @@
 
               <!-- MV值 -->
               <a-card type="inner" title="MV值 (后台计算)" class="mb-4">
-                <a-descriptions bordered column="1" :labelStyle="{ width: '200px' }">
+                <a-descriptions bordered :column="1" :labelStyle="{ width: '200px' }">
                   <a-descriptions-item label="MV总分">
                     <div v-if="formState.mvScore !== null && formState.mvScore !== undefined" style="display: flex; align-items: center; gap: 16px;">
                       <span style="font-size: 20px; font-weight: bold; color: #f5222d;">{{ Number(formState.mvScore).toFixed(2) }}</span>
@@ -824,15 +824,14 @@
           </a-form>
         </a-tab-pane>
 
-        <!-- 占位 Tabs -->
-        <a-tab-pane key="match" tab="匹配轨迹">
-          <a-empty description="匹配轨迹功能待开发" />
+        <a-tab-pane key="matchTrack" tab="匹配轨迹">
+          <service-tracks :user-id="userId" :type="1" :user-name="formState.baseInfo.name" />
         </a-tab-pane>
-        <a-tab-pane key="date" tab="约见轨迹">
-          <a-empty description="约见轨迹功能待开发" />
+        <a-tab-pane key="dateTrack" tab="约见轨迹">
+          <service-tracks :user-id="userId" :type="2" :user-name="formState.baseInfo.name" />
         </a-tab-pane>
-        <a-tab-pane key="therapy" tab="治疗轨迹">
-          <a-empty description="治疗轨迹功能待开发" />
+        <a-tab-pane key="therapyTrack" tab="治疗轨迹">
+          <service-tracks :user-id="userId" :type="3" :user-name="formState.baseInfo.name" />
         </a-tab-pane>
       </a-tabs>
     </a-spin>
@@ -850,6 +849,8 @@ import * as options from '../../constants/member-options';
 import { calculateEnneagramMatch, ENNEAGRAM_LABELS, type EnneagramMatchResult } from '../../utils/enneagram-match';
 import { getAttachmentTypeInfo, getDimensionDescription } from '../../utils/attachment-info';
 import { getHappinessChartOption, generateHappinessAnalysis, type HappinessAnalysis } from '../../utils/happiness-config';
+
+import ServiceTracks from './components/ServiceTracks.vue';
 
 const route = useRoute();
 const router = useRouter();

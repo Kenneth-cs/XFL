@@ -13,6 +13,7 @@ import { UploadModule } from './modules/upload/upload.module';
 import { AssessmentModule } from './modules/assessment/assessment.module';
 import { MvModule } from './modules/mv/mv.module';
 import { MatchModule } from './modules/match/match.module';
+import { ServiceTrackModule } from './modules/service-track/service-track.module';
 import { SharedModule } from './shared/shared.module';
 
 @Module({
@@ -53,6 +54,7 @@ import { SharedModule } from './shared/shared.module';
     AssessmentModule,
     MvModule,
     MatchModule,
+    ServiceTrackModule,
   ],
   controllers: [AppController],
   providers: [AppService],
