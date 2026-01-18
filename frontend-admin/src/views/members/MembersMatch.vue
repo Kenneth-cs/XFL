@@ -465,7 +465,7 @@ const getEnneagramTypes = (types: number[]) => {
 };
 
 const viewDetail = (record: any) => {
-  message.info('详情页开发中');
+  router.push({ name: 'MatchDetail', params: { id: record.id } });
 };
 
 onMounted(() => {

@@ -1,5 +1,5 @@
 <template>
-  <div ref="chartRef" :style="{ width: width, height: height }"></div>
+  <div ref="chartRef" :style="{ width: typeof width === 'number' ? width + 'px' : width, height: typeof height === 'number' ? height + 'px' : height }"></div>
 </template>
 
 <script setup lang="ts">
@@ -13,11 +13,11 @@ const props = defineProps({
     default: () => ({})
   },
   width: {
-    type: String,
+    type: [String, Number],
     default: '80px'
   },
   height: {
-    type: String,
+    type: [String, Number],
     default: '80px'
   },
   showLabel: {
@@ -51,15 +51,21 @@ const updateChart = () => {
   const option2 = {
     backgroundColor: 'transparent',
     polar: {
-      radius: ['10%', '100%'] // 减小内半径，增大显示区域
+      radius: props.showLabel ? ['15%', '85%'] : ['10%', '100%'] // 显示标签时预留更多外围空间
     },
     angleAxis: {
       type: 'category',
-      data: dimensions.map(d => d.outerLabel),
+      data: dimensions.map(d => d.outer),
       startAngle: 90,
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { show: false }, // 微缩图不显示标签
+      axisLabel: { 
+        show: props.showLabel,
+        interval: 0,
+        color: '#333', // 标签颜色加深，确保清晰
+        fontSize: 11,
+        margin: 5
+      },
       splitLine: { show: false }
     },
     radiusAxis: {

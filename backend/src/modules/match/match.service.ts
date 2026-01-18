@@ -343,10 +343,60 @@ export class MatchService {
   }
 
   async getMatchDetail(id: string) {
-    return this.detailRepo.findOne({
+    const detail = await this.detailRepo.findOne({
       where: { id },
-      relations: ['batch', 'candidate', 'candidate.profile', 'batch.initiator', 'batch.initiator.profile']
+      relations: ['batch', 'candidate', 'batch.initiator']
     });
+
+    if (!detail) {
+      throw new NotFoundException('Match detail not found');
+    }
+
+    const initiatorId = detail.batch?.initiatorId;
+    const candidateId = detail.candidateId;
+    const userIds = new Set<string>();
+    if (initiatorId) userIds.add(initiatorId);
+    if (candidateId) userIds.add(candidateId);
+
+    if (userIds.size > 0) {
+      const idsArray = Array.from(userIds);
+
+      // 1. 批量加载 Profile
+      const profiles = await this.profileRepo.find({
+        where: { userId: In(idsArray) }
+      });
+      const profileMap = new Map(profiles.map(p => [p.userId, p]));
+
+      // 2. 批量加载所有类型的最新测评 (Type=1,2,3)
+      // 注意：这里我们取每个用户每种类型的最新一条
+      const assessments = await this.assessmentRepo.createQueryBuilder('record')
+        .where('record.userId IN (:...ids)', { ids: idsArray })
+        .andWhere('record.isLatest = 1')
+        .getMany();
+      
+      const assessmentMap = new Map<string, any>();
+      assessments.forEach(a => {
+        if (!assessmentMap.has(a.userId)) {
+          assessmentMap.set(a.userId, {});
+        }
+        const userAss = assessmentMap.get(a.userId);
+        if (a.type === 1) userAss.enneagram = a.resultData;
+        if (a.type === 2) userAss.attachment = a.resultData;
+        if (a.type === 3) userAss.happiness = a.resultData;
+      });
+
+      // 3. 拼装数据
+      if (detail.batch?.initiator) {
+        detail.batch.initiator.profile = profileMap.get(initiatorId);
+        (detail.batch.initiator as any).assessmentResults = assessmentMap.get(initiatorId) || {};
+      }
+      if (detail.candidate) {
+        detail.candidate.profile = profileMap.get(candidateId);
+        (detail.candidate as any).assessmentResults = assessmentMap.get(candidateId) || {};
+      }
+    }
+
+    return detail;
   }
 }
 
