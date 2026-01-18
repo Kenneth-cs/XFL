@@ -10,15 +10,50 @@
       :loading="loading" 
       :pagination="pagination"
       @change="handleTableChange"
+      :scroll="{ x: 1200 }"
       row-key="id"
     >
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'target'">
-          <span>{{ record.targetName || record.targetId }}</span>
+        <!-- 匹配轨迹 -->
+        <template v-if="column.key === 'initiatorName'">
+          <span>{{ record.initiatorName }}</span>
         </template>
+        <template v-if="column.key === 'targetName'">
+          <span>{{ record.targetName }}</span>
+        </template>
+        <template v-if="column.key === 'myResult'">
+          <a-tag :color="getMyResultColor(record)">{{ getMyResultText(record) }}</a-tag>
+        </template>
+        <template v-if="column.key === 'peerResult'">
+          <a-tag :color="getPeerResultColor(record)">{{ getPeerResultText(record) }}</a-tag>
+        </template>
+        
+        <!-- 约见轨迹 -->
         <template v-if="column.key === 'status'">
           <a-tag :color="getStatusColor(record.status)">{{ getStatusText(record.status) }}</a-tag>
         </template>
+        <template v-if="column.key === 'myFeedback'">
+          <span>{{ getMyFeedback(record) }}</span>
+        </template>
+        <template v-if="column.key === 'peerFeedback'">
+          <span>{{ getPeerFeedback(record) }}</span>
+        </template>
+        
+        <!-- 治疗轨迹 -->
+        <template v-if="column.key === 'demand'">
+          <span>{{ record.feedbackContent?.demand || '-' }}</span>
+        </template>
+        <template v-if="column.key === 'plan'">
+          <span>{{ record.feedbackContent?.plan || '-' }}</span>
+        </template>
+        <template v-if="column.key === 'effect'">
+          <span>{{ record.feedbackContent?.effect || '-' }}</span>
+        </template>
+        <template v-if="column.key === 'nextTime'">
+          <span>{{ record.feedbackContent?.nextTime || '-' }}</span>
+        </template>
+        
+        <!-- 操作 -->
         <template v-if="column.key === 'action'">
           <a-button type="link" size="small" @click="handleEdit(record)">编辑</a-button>
         </template>
@@ -53,7 +88,7 @@
           <a-date-picker v-model:value="formState.eventTime" show-time style="width: 100%" />
         </a-form-item>
 
-        <a-form-item label="状态/结果" required>
+        <a-form-item label="状态/结果" required v-if="type !== 3">
           <a-select v-model:value="formState.status">
             <a-select-option v-for="option in statusOptions" :key="option.value" :value="option.value">
               {{ option.label }}
@@ -64,19 +99,23 @@
         <!-- 动态表单项基于类型 -->
         <template v-if="type === 1"> <!-- 匹配轨迹 -->
            <a-form-item label="本方结果">
-             <a-textarea v-model:value="formState.feedbackContent.myResult" :rows="2" />
+             <a-select v-model:value="formState.myResult">
+               <a-select-option value="看中">看中</a-select-option>
+               <a-select-option value="未看中">未看中</a-select-option>
+               <a-select-option value="待反馈">待反馈</a-select-option>
+             </a-select>
            </a-form-item>
            <a-form-item label="对方结果 (只读/对方填写)">
-             <div class="readonly-text">{{ formState.feedbackContent.peerResult || '暂无' }}</div>
+             <div class="readonly-text">{{ formState.peerResult || '暂无' }}</div>
            </a-form-item>
         </template>
 
         <template v-if="type === 2"> <!-- 约见轨迹 -->
            <a-form-item label="约见反馈">
-             <a-textarea v-model:value="formState.feedbackContent.feedback" :rows="3" />
+             <a-textarea v-model:value="formState.myFeedback" :rows="3" />
            </a-form-item>
            <a-form-item label="对方反馈 (只读)">
-             <div class="readonly-text">{{ formState.feedbackContent.peerFeedback || '暂无' }}</div>
+             <div class="readonly-text">{{ formState.peerFeedback || '暂无' }}</div>
            </a-form-item>
         </template>
 
@@ -138,34 +177,51 @@ const formState = reactive({
   targetId: undefined,
   eventTime: undefined,
   status: undefined,
-  feedbackContent: {} as any
+  feedbackContent: {} as any,
+  viewerRole: undefined as string | undefined, // Track viewer's role when editing
+  myResult: undefined as string | undefined, // For match track
+  peerResult: undefined as string | undefined, // For match track (readonly)
+  myFeedback: undefined as string | undefined, // For date track
+  peerFeedback: undefined as string | undefined // For date track (readonly)
 });
 
 const columns = computed(() => {
-  const base = [
-    { title: '时间', dataIndex: 'eventTime', key: 'eventTime', width: 180 },
-    { title: '记录人', dataIndex: 'createdBy', key: 'createdBy', width: 120 },
-  ];
-  
-  if (props.type === 1) {
+  if (props.type === 1) { // 匹配轨迹
     return [
-      ...base,
-      { title: '匹配方', key: 'target', width: 150 },
-      { title: '结果', key: 'status', width: 100 },
-      { title: '操作', key: 'action', width: 100 }
+      { title: '时间', dataIndex: 'eventTime', key: 'eventTime', width: 160 },
+      { title: '发起方', key: 'initiatorName', width: 120 },
+      { title: '发起方ID', dataIndex: 'initiatorId', key: 'initiatorId', width: 120 },
+      { title: '匹配方', key: 'targetName', width: 120 },
+      { title: '匹配方ID', dataIndex: 'targetId', key: 'targetId', width: 120 },
+      { title: '本方结果', key: 'myResult', width: 100 },
+      { title: '对方结果', key: 'peerResult', width: 100 },
+      { title: '记录人', dataIndex: 'createdBy', key: 'createdBy', width: 120 },
+      { title: '操作', key: 'action', width: 80, fixed: 'right' }
     ];
-  } else if (props.type === 2) {
+  } else if (props.type === 2) { // 约见轨迹
     return [
-      ...base,
-      { title: '约见方', key: 'target', width: 150 },
-      { title: '状态', key: 'status', width: 100 },
-      { title: '操作', key: 'action', width: 100 }
+      { title: '时间', dataIndex: 'eventTime', key: 'eventTime', width: 160 },
+      { title: '发起方', key: 'initiatorName', width: 120 },
+      { title: '发起方ID', dataIndex: 'initiatorId', key: 'initiatorId', width: 120 },
+      { title: '约见方', key: 'targetName', width: 120 },
+      { title: '约见方ID', dataIndex: 'targetId', key: 'targetId', width: 120 },
+      { title: '约见进度', key: 'status', width: 100 },
+      { title: '本方反馈', key: 'myFeedback', width: 120, ellipsis: true },
+      { title: '对方反馈', key: 'peerFeedback', width: 120, ellipsis: true },
+      { title: '记录人', dataIndex: 'createdBy', key: 'createdBy', width: 120 },
+      { title: '操作', key: 'action', width: 80, fixed: 'right' }
     ];
-  } else {
+  } else { // 治疗轨迹
     return [
-      ...base,
-      { title: '服务内容', key: 'content', ellipsis: true },
-      { title: '操作', key: 'action', width: 100 }
+      { title: '用户ID', dataIndex: 'initiatorId', key: 'initiatorId', width: 120 },
+      { title: '用户姓名', key: 'initiatorName', width: 120 },
+      { title: '服务时间', dataIndex: 'eventTime', key: 'eventTime', width: 160 },
+      { title: '用户需求', key: 'demand', width: 150, ellipsis: true },
+      { title: '服务方案', key: 'plan', width: 150, ellipsis: true },
+      { title: '服务效果', key: 'effect', width: 120, ellipsis: true },
+      { title: '服务老师', dataIndex: 'createdBy', key: 'createdBy', width: 120 },
+      { title: '下次预约', key: 'nextTime', width: 160 },
+      { title: '操作', key: 'action', width: 80, fixed: 'right' }
     ];
   }
 });
@@ -233,6 +289,11 @@ const showAddModal = () => {
   formState.eventTime = dayjs();
   formState.status = undefined;
   formState.feedbackContent = {};
+  formState.viewerRole = 'initiator'; // New records are always created as initiator
+  formState.myResult = undefined;
+  formState.peerResult = undefined;
+  formState.myFeedback = undefined;
+  formState.peerFeedback = undefined;
   modalVisible.value = true;
 };
 
@@ -243,6 +304,27 @@ const handleEdit = (record: any) => {
   formState.eventTime = dayjs(record.eventTime);
   formState.status = record.status;
   formState.feedbackContent = record.feedbackContent || {};
+  formState.viewerRole = record.viewerRole; // Store the viewer's role
+  
+  // Extract my/peer data based on viewer role
+  if (props.type === 1) { // Match track
+    if (record.viewerRole === 'initiator') {
+      formState.myResult = record.feedbackContent?.myResult;
+      formState.peerResult = record.feedbackContent?.peerResult;
+    } else {
+      formState.myResult = record.feedbackContent?.peerResult;
+      formState.peerResult = record.feedbackContent?.myResult;
+    }
+  } else if (props.type === 2) { // Date track
+    if (record.viewerRole === 'initiator') {
+      formState.myFeedback = record.feedbackContent?.feedback;
+      formState.peerFeedback = record.feedbackContent?.peerFeedback;
+    } else {
+      formState.myFeedback = record.feedbackContent?.peerFeedback;
+      formState.peerFeedback = record.feedbackContent?.feedback;
+    }
+  }
+  
   // If editing, prepopulate search results with current target
   if (record.targetId && record.targetName) {
       searchResults.value = [{ id: record.targetId, name: record.targetName }];
@@ -253,30 +335,73 @@ const handleEdit = (record: any) => {
 const handleModalOk = async () => {
   modalLoading.value = true;
   try {
-    const payload: any = {
-      initiatorId: props.userId,
-      type: props.type,
-      eventTime: formState.eventTime ? dayjs(formState.eventTime).format('YYYY-MM-DDTHH:mm:ss') : dayjs().format('YYYY-MM-DDTHH:mm:ss')
-    };
-    
-    // Only include optional fields if they have values
-    if (formState.targetId) {
-      payload.targetId = formState.targetId;
-    }
-    if (formState.status !== undefined && formState.status !== null) {
-      payload.status = Number(formState.status);
-    }
-    if (formState.feedbackContent && Object.keys(formState.feedbackContent).length > 0) {
-      payload.feedbackContent = formState.feedbackContent;
-    }
-
     if (isEdit.value) {
-      await axios.put(`/service-tracks/${currentId.value}`, payload);
+      // Update operation: only send fields to be updated
+      const updatePayload: any = {};
+      
+      if (formState.status !== undefined && formState.status !== null && props.type !== 3) {
+        updatePayload.status = Number(formState.status);
+      }
+      
+      if (formState.eventTime) {
+        updatePayload.eventTime = dayjs(formState.eventTime).format('YYYY-MM-DDTHH:mm:ss');
+      }
+      
+      // Build feedbackContent based on viewer role
+      const feedbackContent: any = {};
+      
+      if (props.type === 1) { // Match track
+        if (formState.viewerRole === 'initiator') {
+          feedbackContent.myResult = formState.myResult;
+        } else {
+          feedbackContent.peerResult = formState.myResult;
+        }
+      } else if (props.type === 2) { // Date track
+        if (formState.viewerRole === 'initiator') {
+          feedbackContent.feedback = formState.myFeedback;
+        } else {
+          feedbackContent.peerFeedback = formState.myFeedback;
+        }
+      } else if (props.type === 3) { // Therapy track
+        Object.assign(feedbackContent, formState.feedbackContent);
+      }
+      
+      updatePayload.feedbackContent = feedbackContent;
+      
+      await axios.put(`/service-tracks/${currentId.value}`, updatePayload);
       message.success('更新成功');
     } else {
-      await axios.post('/service-tracks', payload);
+      // Create operation
+      const createPayload: any = {
+        initiatorId: props.userId,
+        type: props.type,
+        eventTime: formState.eventTime ? dayjs(formState.eventTime).format('YYYY-MM-DDTHH:mm:ss') : dayjs().format('YYYY-MM-DDTHH:mm:ss')
+      };
+      
+      if (formState.targetId) {
+        createPayload.targetId = formState.targetId;
+      }
+      if (formState.status !== undefined && formState.status !== null && props.type !== 3) {
+        createPayload.status = Number(formState.status);
+      }
+      
+      // Build feedbackContent for new record
+      const feedbackContent: any = {};
+      
+      if (props.type === 1) {
+        feedbackContent.myResult = formState.myResult || '待反馈';
+      } else if (props.type === 2) {
+        feedbackContent.feedback = formState.myFeedback || '';
+      } else if (props.type === 3) {
+        Object.assign(feedbackContent, formState.feedbackContent);
+      }
+      
+      createPayload.feedbackContent = feedbackContent;
+      
+      await axios.post('/service-tracks', createPayload);
       message.success('创建成功');
     }
+    
     modalVisible.value = false;
     fetchData();
   } catch (error) {
@@ -302,6 +427,62 @@ const getStatusColor = (status: number) => {
   if (status === 1) return 'success';
   if (status === 0) return 'error';
   return 'default';
+};
+
+// 匹配轨迹：获取本方结果
+const getMyResultText = (record: any) => {
+  if (!record.feedbackContent) return '待反馈';
+  // viewerRole === 'initiator' means I am the initiator
+  if (record.viewerRole === 'initiator') {
+    return record.feedbackContent.myResult || '待反馈';
+  } else {
+    // I am the target, so "my" result is stored in peerResult from initiator's perspective
+    return record.feedbackContent.peerResult || '待反馈';
+  }
+};
+
+const getMyResultColor = (record: any) => {
+  const text = getMyResultText(record);
+  if (text === '看中') return 'success';
+  if (text === '未看中') return 'error';
+  return 'default';
+};
+
+// 匹配轨迹：获取对方结果
+const getPeerResultText = (record: any) => {
+  if (!record.feedbackContent) return '待反馈';
+  if (record.viewerRole === 'initiator') {
+    return record.feedbackContent.peerResult || '待反馈';
+  } else {
+    return record.feedbackContent.myResult || '待反馈';
+  }
+};
+
+const getPeerResultColor = (record: any) => {
+  const text = getPeerResultText(record);
+  if (text === '看中') return 'success';
+  if (text === '未看中') return 'error';
+  return 'default';
+};
+
+// 约见轨迹：获取本方反馈
+const getMyFeedback = (record: any) => {
+  if (!record.feedbackContent) return '-';
+  if (record.viewerRole === 'initiator') {
+    return record.feedbackContent.feedback || '-';
+  } else {
+    return record.feedbackContent.peerFeedback || '-';
+  }
+};
+
+// 约见轨迹：获取对方反馈
+const getPeerFeedback = (record: any) => {
+  if (!record.feedbackContent) return '-';
+  if (record.viewerRole === 'initiator') {
+    return record.feedbackContent.peerFeedback || '-';
+  } else {
+    return record.feedbackContent.feedback || '-';
+  }
 };
 
 onMounted(() => {

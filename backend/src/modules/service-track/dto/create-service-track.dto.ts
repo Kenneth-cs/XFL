@@ -37,13 +37,13 @@ export class CreateServiceTrackDto {
 export class UpdateServiceTrackDto {
   @IsOptional()
   @IsNumber()
-  status: number;
+  status?: number;
 
   @IsOptional()
-  feedbackContent: any;
+  feedbackContent?: any;
 
   @IsOptional()
   @IsDateString()
-  eventTime: Date;
+  eventTime?: Date | string;
 }
 

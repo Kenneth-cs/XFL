@@ -42,14 +42,11 @@ export class ServiceTrackService {
     const qb = this.trackRepo.createQueryBuilder('track')
       .orderBy('track.eventTime', 'DESC');
 
-    // Bidirectional query for initiatorId (as per requirement: show in both profiles)
+    // Bidirectional query: show records where user is either initiator OR target
     if (initiatorId) {
-      // Simplified query to verify basic functionality first
-      qb.andWhere('track.initiatorId = :initiatorId', { initiatorId });
-      // qb.andWhere('(track.initiatorId = :initiatorId OR track.targetId = :initiatorId)', { initiatorId });
+      qb.andWhere('(track.initiatorId = :userId OR track.targetId = :userId)', { userId: initiatorId });
     } else if (targetId) {
-      // If querying specifically by targetId (less common for profile view, but possible)
-      qb.andWhere('track.targetId = :targetId', { targetId });
+      qb.andWhere('(track.initiatorId = :userId OR track.targetId = :userId)', { userId: targetId });
     }
 
     if (type) {
@@ -66,10 +63,7 @@ export class ServiceTrackService {
       .take(limit)
       .getManyAndCount();
 
-    // Enrich with targetName
-    // Logic: If I am initiator, show target's name. If I am target, show initiator's name.
-    // For simplicity, we'll fetch both user IDs involved.
-    
+    // Enrich with both initiator and target information
     const relatedUserIds = new Set<string>();
     items.forEach(t => {
       if (t.initiatorId) relatedUserIds.add(t.initiatorId);
@@ -86,26 +80,32 @@ export class ServiceTrackService {
       const profileMap = new Map(profiles.map(p => [p.userId, p]));
       
       items.forEach((track: any) => {
-        // Determine the "Other Party" based on the query context
-        // If viewing initiatorId's profile, the other party is the one that is NOT initiatorId
-        // But initiatorId changes per request. 
-        // For the display, let's just provide both names, or let frontend decide.
-        // Or simpler: display the name of the 'target' role in the interaction if track.initiator == currentProfileUser
-        // and 'initiator' role if track.target == currentProfileUser.
+        const currentViewUserId = initiatorId || targetId; // The user whose profile we're viewing
         
-        // Actually, the frontend likely expects `targetName` to be the "other person".
-        let otherId = track.targetId;
-        if (initiatorId && track.targetId === initiatorId) {
-             otherId = track.initiatorId; // I am the target, so the other is the initiator
-        }
-
-        if (otherId) {
-             const user = userMap.get(otherId);
-             const profile = profileMap.get(otherId);
-             track.targetName = profile?.baseInfo?.name || user?.phone || otherId;
+        // Add initiator info
+        const initiatorUser = userMap.get(track.initiatorId);
+        const initiatorProfile = profileMap.get(track.initiatorId);
+        track.initiatorName = initiatorProfile?.baseInfo?.name || initiatorUser?.phone || track.initiatorId;
+        
+        // Add target info
+        if (track.targetId) {
+          const targetUser = userMap.get(track.targetId);
+          const targetProfile = profileMap.get(track.targetId);
+          track.targetName = targetProfile?.baseInfo?.name || targetUser?.phone || track.targetId;
         } else {
-             // Should not happen for match/date tracks, but possible for therapy
-             track.targetName = '无'; 
+          track.targetName = '无';
+        }
+        
+        // Determine viewer's role (am I the initiator or the target?)
+        track.viewerRole = track.initiatorId === currentViewUserId ? 'initiator' : 'target';
+        
+        // Set "peer" (对方) info based on viewer's role
+        if (track.viewerRole === 'initiator') {
+          track.peerName = track.targetName;
+          track.peerId = track.targetId;
+        } else {
+          track.peerName = track.initiatorName;
+          track.peerId = track.initiatorId;
         }
       });
     }
@@ -129,6 +129,16 @@ export class ServiceTrackService {
 
   async update(id: string, dto: UpdateServiceTrackDto, currentUser: any) {
     const track = await this.findOne(id);
+    
+    // Merge feedbackContent instead of overwriting it
+    if (dto.feedbackContent) {
+      track.feedbackContent = {
+        ...(track.feedbackContent || {}),
+        ...dto.feedbackContent
+      };
+      delete dto.feedbackContent; // Remove from dto to avoid overwriting
+    }
+    
     Object.assign(track, dto);
     return this.trackRepo.save(track);
   }
