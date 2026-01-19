@@ -291,7 +291,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { showToast } from '@/utils/toast'
@@ -319,6 +319,11 @@ const form = ref({
   storeName: ''
 })
 
+// 监控表单数据变化
+watch(() => form.value, (newVal) => {
+  console.log('📝 表单数据已更新:', JSON.parse(JSON.stringify(newVal)))
+}, { deep: true })
+
 // 选择器显示状态
 const showGenderPicker = ref(false)
 const showDatePicker = ref(false)
@@ -329,46 +334,49 @@ const showStorePicker = ref(false)
 
 // 选项数据（根据文档要求）- Vant Picker 需要对象数组格式
 const genderColumns = [
-  { text: '男' },
-  { text: '女' }
+  { text: '男', value: '男' },
+  { text: '女', value: '女' }
 ]
 const educationColumns = [
-  { text: '高中及以下' },
-  { text: '大专' },
-  { text: '本科' },
-  { text: '硕士' },
-  { text: '博士' }
+  { text: '高中及以下', value: '高中及以下' },
+  { text: '大专', value: '大专' },
+  { text: '本科', value: '本科' },
+  { text: '硕士', value: '硕士' },
+  { text: '博士', value: '博士' }
 ]
 const marriageColumns = [
-  { text: '未婚' },
-  { text: '离异未育' },
-  { text: '离异带孩' },
-  { text: '丧偶' }
+  { text: '未婚', value: '未婚' },
+  { text: '离异未育', value: '离异未育' },
+  { text: '离异带孩', value: '离异带孩' },
+  { text: '丧偶', value: '丧偶' }
 ]
 const ethnicityColumns = [
-  { text: '汉族' }, { text: '蒙古族' }, { text: '回族' }, { text: '藏族' }, 
-  { text: '维吾尔族' }, { text: '苗族' }, { text: '彝族' }, { text: '壮族' }, 
-  { text: '布依族' }, { text: '朝鲜族' }, { text: '满族' }, { text: '侗族' }, 
-  { text: '瑶族' }, { text: '白族' }, { text: '土家族' }, { text: '哈尼族' },
-  { text: '哈萨克族' }, { text: '傣族' }, { text: '黎族' }, { text: '傈僳族' }, 
-  { text: '佤族' }, { text: '畲族' }, { text: '高山族' }, { text: '拉祜族' },
-  { text: '水族' }, { text: '东乡族' }, { text: '纳西族' }, { text: '景颇族' }, 
-  { text: '柯尔克孜族' }, { text: '土族' }, { text: '达斡尔族' },
-  { text: '仫佬族' }, { text: '羌族' }, { text: '布朗族' }, { text: '撒拉族' }, 
-  { text: '毛南族' }, { text: '仡佬族' }, { text: '锡伯族' },
-  { text: '阿昌族' }, { text: '普米族' }, { text: '塔吉克族' }, { text: '怒族' }, 
-  { text: '乌孜别克族' }, { text: '俄罗斯族' },
-  { text: '鄂温克族' }, { text: '德昂族' }, { text: '保安族' }, { text: '裕固族' }, 
-  { text: '京族' }, { text: '塔塔尔族' },
-  { text: '独龙族' }, { text: '鄂伦春族' }, { text: '赫哲族' }, { text: '门巴族' }, 
-  { text: '珞巴族' }, { text: '基诺族' }
+  { text: '汉族', value: '汉族' }, { text: '蒙古族', value: '蒙古族' }, { text: '回族', value: '回族' }, { text: '藏族', value: '藏族' }, 
+  { text: '维吾尔族', value: '维吾尔族' }, { text: '苗族', value: '苗族' }, { text: '彝族', value: '彝族' }, { text: '壮族', value: '壮族' }, 
+  { text: '布依族', value: '布依族' }, { text: '朝鲜族', value: '朝鲜族' }, { text: '满族', value: '满族' }, { text: '侗族', value: '侗族' }, 
+  { text: '瑶族', value: '瑶族' }, { text: '白族', value: '白族' }, { text: '土家族', value: '土家族' }, { text: '哈尼族', value: '哈尼族' },
+  { text: '哈萨克族', value: '哈萨克族' }, { text: '傣族', value: '傣族' }, { text: '黎族', value: '黎族' }, { text: '傈僳族', value: '傈僳族' }, 
+  { text: '佤族', value: '佤族' }, { text: '畲族', value: '畲族' }, { text: '高山族', value: '高山族' }, { text: '拉祜族', value: '拉祜族' },
+  { text: '水族', value: '水族' }, { text: '东乡族', value: '东乡族' }, { text: '纳西族', value: '纳西族' }, { text: '景颇族', value: '景颇族' }, 
+  { text: '柯尔克孜族', value: '柯尔克孜族' }, { text: '土族', value: '土族' }, { text: '达斡尔族', value: '达斡尔族' },
+  { text: '仫佬族', value: '仫佬族' }, { text: '羌族', value: '羌族' }, { text: '布朗族', value: '布朗族' }, { text: '撒拉族', value: '撒拉族' }, 
+  { text: '毛南族', value: '毛南族' }, { text: '仡佬族', value: '仡佬族' }, { text: '锡伯族', value: '锡伯族' },
+  { text: '阿昌族', value: '阿昌族' }, { text: '普米族', value: '普米族' }, { text: '塔吉克族', value: '塔吉克族' }, { text: '怒族', value: '怒族' }, 
+  { text: '乌孜别克族', value: '乌孜别克族' }, { text: '俄罗斯族', value: '俄罗斯族' },
+  { text: '鄂温克族', value: '鄂温克族' }, { text: '德昂族', value: '德昂族' }, { text: '保安族', value: '保安族' }, { text: '裕固族', value: '裕固族' }, 
+  { text: '京族', value: '京族' }, { text: '塔塔尔族', value: '塔塔尔族' },
+  { text: '独龙族', value: '独龙族' }, { text: '鄂伦春族', value: '鄂伦春族' }, { text: '赫哲族', value: '赫哲族' }, { text: '门巴族', value: '门巴族' }, 
+  { text: '珞巴族', value: '珞巴族' }, { text: '基诺族', value: '基诺族' }
 ]
 const storeColumns = ref<any[]>([])
 
 // 加载门店列表
 onMounted(async () => {
   try {
-    const stores = await request.get('/stores')
+    const res: any = await request.get('/stores')
+    // 兼容处理：有些拦截器返回 res.data，有些直接返回数据
+    const stores = Array.isArray(res) ? res : (res.data || [])
+    
     storeColumns.value = stores.map((s: any) => ({
       text: `${s.id} ${s.name}`,  // 门店ID + 全称
       value: s.id
@@ -378,16 +386,45 @@ onMounted(async () => {
   }
 })
 
-// 选择器确认事件
-function onGenderConfirm(event: any) {
-  console.log('onGenderConfirm event:', event)
-  const selected = event.selectedOptions || event.selectedValues
-  if (selected && selected.length > 0) {
-    form.value.gender = selected[0].text || selected[0]
-    console.log('Selected gender:', form.value.gender)
+// 通用确认处理函数
+function handlePickerConfirm(field: keyof typeof form.value, { selectedOptions }: any) {
+  console.log(`🎯 ${field} 确认选择:`, selectedOptions)
+  
+  if (selectedOptions && selectedOptions[0]) {
+    const text = selectedOptions[0].text
+    const value = selectedOptions[0].value || text // 如果没有value就用text
+    
+    // 特殊处理门店选择（需要同时设置ID和名称）
+    if (field === 'storeId') {
+      form.value.storeId = value
+      form.value.storeName = text
+      console.log('✅ 门店已更新:', { id: value, name: text })
+    } else {
+      // 普通字段直接赋值
+      form.value[field] = text
+      console.log(`✅ ${field} 已更新为:`, text)
+    }
+    
+    // 强制触发更新
+    nextTick(() => {
+      form.value = { ...form.value }
+    })
   }
+  
+  // 关闭所有弹窗
   showGenderPicker.value = false
+  showEducationPicker.value = false
+  showMarriagePicker.value = false
+  showEthnicityPicker.value = false
+  showStorePicker.value = false
 }
+
+// 具体调用
+const onGenderConfirm = (v: any) => handlePickerConfirm('gender', v)
+const onEducationConfirm = (v: any) => handlePickerConfirm('education', v)
+const onMarriageConfirm = (v: any) => handlePickerConfirm('marriage', v)
+const onEthnicityConfirm = (v: any) => handlePickerConfirm('ethnicity', v)
+const onStoreConfirm = (v: any) => handlePickerConfirm('storeId', v)
 
 function onDateConfirm({ selectedValues }: any) {
   const year = selectedValues[0]
@@ -395,39 +432,6 @@ function onDateConfirm({ selectedValues }: any) {
   const day = String(selectedValues[2]).padStart(2, '0')
   form.value.birthday = `${year}-${month}-${day}`
   showDatePicker.value = false
-}
-
-function onEducationConfirm(event: any) {
-  const selected = event.selectedOptions || event.selectedValues
-  if (selected && selected.length > 0) {
-    form.value.education = selected[0].text || selected[0]
-  }
-  showEducationPicker.value = false
-}
-
-function onMarriageConfirm(event: any) {
-  const selected = event.selectedOptions || event.selectedValues
-  if (selected && selected.length > 0) {
-    form.value.marriage = selected[0].text || selected[0]
-  }
-  showMarriagePicker.value = false
-}
-
-function onEthnicityConfirm(event: any) {
-  const selected = event.selectedOptions || event.selectedValues
-  if (selected && selected.length > 0) {
-    form.value.ethnicity = selected[0].text || selected[0]
-  }
-  showEthnicityPicker.value = false
-}
-
-function onStoreConfirm(event: any) {
-  const selected = event.selectedOptions || event.selectedValues
-  if (selected && selected.length > 0) {
-    form.value.storeId = selected[0].value || selected[0]
-    form.value.storeName = selected[0].text || selected[0]
-  }
-  showStorePicker.value = false
 }
 
 // 显示/关闭用户协议
@@ -569,4 +573,3 @@ async function onSubmit() {
   border-top: 1px solid #eee;
 }
 </style>
-
