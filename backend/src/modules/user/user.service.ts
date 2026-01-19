@@ -367,21 +367,32 @@ export class UserService {
     };
   }
 
-  async findAllAppUsers(storeId?: string, page = 1, limit = 20, currentUser?: CurrentUserData) {
-    const where: any = {};
-    // 只有当 storeId 存在时才添加过滤条件
-    // 配合 Controller 层的逻辑：非超管必须传 storeId，超管可不传
+  async findAllAppUsers(storeId?: string, page = 1, limit = 20, currentUser?: CurrentUserData, name?: string, phone?: string) {
+    // 使用 QueryBuilder 来支持姓名和手机号搜索
+    const qb = this.appUserRepository.createQueryBuilder('user');
+    
+    // 门店过滤
     if (storeId) {
-      where.storeId = storeId;
+      qb.andWhere('user.storeId = :storeId', { storeId });
     }
-
-    // 1. 先查询用户列表（不关联查询 profile，避免 ORM 映射问题）
-    const [users, total] = await this.appUserRepository.findAndCount({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { createdAt: 'DESC' },
-    });
+    
+    // 手机号搜索
+    if (phone) {
+      qb.andWhere('user.phone LIKE :phone', { phone: `%${phone}%` });
+    }
+    
+    // 姓名搜索需要联表查询 profile（通过JSON字段）
+    if (name) {
+      qb.leftJoin('app_user_profile', 'profile', 'profile.user_id = user.id');
+      qb.andWhere("JSON_EXTRACT(profile.base_info, '$.name') LIKE :name", { name: `%${name}%` });
+    }
+    
+    // 分页和排序
+    const [users, total] = await qb
+      .skip((page - 1) * limit)
+      .take(limit)
+      .orderBy('user.createdAt', 'DESC')
+      .getManyAndCount();
 
     // 2. 提取用户 ID 列表
     const userIds = users.map(u => u.id);

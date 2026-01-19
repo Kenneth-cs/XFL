@@ -379,8 +379,13 @@ onMounted(async () => {
 })
 
 // 选择器确认事件
-function onGenderConfirm({ selectedOptions }: any) {
-  form.value.gender = selectedOptions[0].text
+function onGenderConfirm(event: any) {
+  console.log('onGenderConfirm event:', event)
+  const selected = event.selectedOptions || event.selectedValues
+  if (selected && selected.length > 0) {
+    form.value.gender = selected[0].text || selected[0]
+    console.log('Selected gender:', form.value.gender)
+  }
   showGenderPicker.value = false
 }
 
@@ -392,24 +397,36 @@ function onDateConfirm({ selectedValues }: any) {
   showDatePicker.value = false
 }
 
-function onEducationConfirm({ selectedOptions }: any) {
-  form.value.education = selectedOptions[0].text
+function onEducationConfirm(event: any) {
+  const selected = event.selectedOptions || event.selectedValues
+  if (selected && selected.length > 0) {
+    form.value.education = selected[0].text || selected[0]
+  }
   showEducationPicker.value = false
 }
 
-function onMarriageConfirm({ selectedOptions }: any) {
-  form.value.marriage = selectedOptions[0].text
+function onMarriageConfirm(event: any) {
+  const selected = event.selectedOptions || event.selectedValues
+  if (selected && selected.length > 0) {
+    form.value.marriage = selected[0].text || selected[0]
+  }
   showMarriagePicker.value = false
 }
 
-function onEthnicityConfirm({ selectedOptions }: any) {
-  form.value.ethnicity = selectedOptions[0].text
+function onEthnicityConfirm(event: any) {
+  const selected = event.selectedOptions || event.selectedValues
+  if (selected && selected.length > 0) {
+    form.value.ethnicity = selected[0].text || selected[0]
+  }
   showEthnicityPicker.value = false
 }
 
-function onStoreConfirm({ selectedOptions }: any) {
-  form.value.storeId = selectedOptions[0].value
-  form.value.storeName = selectedOptions[0].text
+function onStoreConfirm(event: any) {
+  const selected = event.selectedOptions || event.selectedValues
+  if (selected && selected.length > 0) {
+    form.value.storeId = selected[0].value || selected[0]
+    form.value.storeName = selected[0].text || selected[0]
+  }
   showStorePicker.value = false
 }
 
