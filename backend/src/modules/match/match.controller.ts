@@ -17,7 +17,7 @@ export class MatchController {
     if (user.role === SysUserRole.SUPER_ADMIN) {
       throw new ForbiddenException('请切换对应门店账号进行操作');
     }
-    return this.matchService.initiateMatch(dto);
+    return this.matchService.initiateMatch(dto, user);
   }
 
   @Get()

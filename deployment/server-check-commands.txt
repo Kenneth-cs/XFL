@@ -1,0 +1,104 @@
+# 请在您的服务器终端中复制执行以下命令
+# ========================================
+# 服务器环境检查命令集
+# ========================================
+
+# 1. 检查所有监听端口
+echo "=========================================="
+echo "📌 1. 已占用的端口列表:"
+echo "=========================================="
+ss -tuln | grep LISTEN | awk '{print $5}' | sed 's/.*://' | sort -n | uniq
+
+echo ""
+echo "=========================================="
+echo "📌 2. 详细端口占用情况 (包含进程信息):"
+echo "=========================================="
+ss -tulnp | grep LISTEN
+
+echo ""
+echo "=========================================="
+echo "📌 3. 运行中的 Node.js 进程:"
+echo "=========================================="
+ps aux | grep -E 'node|npm' | grep -v grep
+
+echo ""
+echo "=========================================="
+echo "📌 4. PM2 进程列表:"
+echo "=========================================="
+if command -v pm2 &> /dev/null; then
+    pm2 list
+else
+    echo "PM2 未安装"
+fi
+
+echo ""
+echo "=========================================="
+echo "📌 5. Nginx 状态:"
+echo "=========================================="
+if command -v nginx &> /dev/null; then
+    nginx -v
+    systemctl status nginx --no-pager | head -15
+    echo ""
+    echo "Nginx 配置文件:"
+    ls -lh /etc/nginx/conf.d/ 2>/dev/null
+    ls -lh /etc/nginx/sites-enabled/ 2>/dev/null
+else
+    echo "Nginx 未安装"
+fi
+
+echo ""
+echo "=========================================="
+echo "📌 6. MySQL/MariaDB 状态:"
+echo "=========================================="
+if command -v mysql &> /dev/null; then
+    mysql --version
+    systemctl status mysqld --no-pager 2>/dev/null | head -10 || systemctl status mariadb --no-pager 2>/dev/null | head -10
+else
+    echo "MySQL/MariaDB 未安装"
+fi
+
+echo ""
+echo "=========================================="
+echo "📌 7. Node.js 和 npm 版本:"
+echo "=========================================="
+if command -v node &> /dev/null; then
+    node -v
+    npm -v
+    which node
+else
+    echo "Node.js 未安装"
+fi
+
+echo ""
+echo "=========================================="
+echo "📌 8. 部署目录结构:"
+echo "=========================================="
+echo "--- /var/www ---"
+ls -lh /var/www 2>/dev/null || echo "目录不存在"
+echo ""
+echo "--- /home ---"
+ls -lh /home 2>/dev/null
+echo ""
+echo "--- /root ---"
+ls -lh /root | head -10
+echo ""
+echo "--- /opt ---"
+ls -lh /opt 2>/dev/null
+
+echo ""
+echo "=========================================="
+echo "📌 9. 系统资源使用情况:"
+echo "=========================================="
+echo "--- 磁盘 ---"
+df -h | grep -E 'Filesystem|/dev/'
+echo ""
+echo "--- 内存 ---"
+free -h
+echo ""
+echo "--- CPU ---"
+top -bn1 | head -20
+
+echo ""
+echo "=========================================="
+echo "✅ 检查完成！"
+echo "=========================================="

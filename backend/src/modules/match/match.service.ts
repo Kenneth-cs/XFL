@@ -31,7 +31,7 @@ export class MatchService {
   /**
    * 发起匹配
    */
-  async initiateMatch(dto: InitiateMatchDto) {
+  async initiateMatch(dto: InitiateMatchDto, currentUser: any) {
     const { initiatorId, criteria } = dto;
 
     // 1. 获取发起人信息 (包含档案和九型结果)
@@ -206,6 +206,7 @@ export class MatchService {
       storeId: initiator.storeId,
       initiatorId,
       filterCriteria: criteria,
+      createdBy: currentUser.userId || currentUser.id, // 从JWT Token获取当前操作人ID
     });
     await this.batchRepo.save(batch);
 
