@@ -20,6 +20,9 @@ export class MatchBatch {
   @Column({ name: 'filter_criteria', type: 'json', nullable: true })
   filterCriteria: any;
 
+  @Column({ name: 'created_by', length: 20, nullable: true })
+  createdBy: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

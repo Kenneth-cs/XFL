@@ -70,8 +70,8 @@
                       <a-tooltip :title="formState.baseInfo.gender === '女' ? 'MV值计算必填：用于计算BMI维度' : 'MV值计算必填：身高维度'">
                         <QuestionCircleOutlined style="margin-left: 4px; color: #999;" />
                       </a-tooltip>
-                      <span v-if="formState.mvDetail && formState.mvDetail.height && formState.baseInfo.gender === '男'" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
-                        (得分: {{ formState.mvDetail.height.score || 0 }}分)
+                      <span v-if="formState.mvDetail && formState.mvDetail.height" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
+                        (身高得分: {{ formState.mvDetail.height.score || 0 }}分)
                       </span>
                       <span v-if="formState.mvDetail && formState.mvDetail.bmi && formState.baseInfo.gender === '女'" style="color: #52c41a; font-size: 12px; margin-left: 8px;">
                         (BMI得分: {{ formState.mvDetail.bmi.score || 0 }}分)
@@ -773,6 +773,12 @@
                           <span class="dimension-value">{{ formState.mvDetail.age.value || '-' }}</span>
                           <span class="dimension-score">{{ formState.mvDetail.age.score || 0 }}分</span>
                           <span class="dimension-desc">({{ formState.mvDetail.age.label || '未评' }})</span>
+                        </div>
+                        <div v-if="formState.mvDetail.height" class="mv-dimension-item">
+                          <span class="dimension-label">身高:</span>
+                          <span class="dimension-value">{{ formState.mvDetail.height.value || '-' }}cm</span>
+                          <span class="dimension-score">{{ formState.mvDetail.height.score || 0 }}分</span>
+                          <span class="dimension-desc">({{ formState.mvDetail.height.label || '未评' }})</span>
                         </div>
                         <div v-if="formState.mvDetail.bmi" class="mv-dimension-item">
                           <span class="dimension-label">BMI:</span>

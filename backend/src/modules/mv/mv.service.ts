@@ -126,6 +126,7 @@ export class MvService {
     const extInfo = profile.extInfo || {};
 
     const age = this.calculateAge(baseInfo.birthday);
+    const height = baseInfo.height;
     const bmi = this.calculateBmi(baseInfo.height, baseInfo.weight);
     const appearance = extInfo.appearance;
     const braCup = extInfo.braCup;
@@ -152,6 +153,7 @@ export class MvService {
 
     return {
       age: this.evaluateDimension(age, scheme.female[FemaleMvDimension.AGE]),
+      height: this.evaluateDimension(height, scheme.female[FemaleMvDimension.HEIGHT]),
       bmi: this.evaluateDimension(bmi, scheme.female[FemaleMvDimension.BMI]),
       appearance: this.evaluateDimension(appearance, scheme.female[FemaleMvDimension.APPEARANCE]),
       bra_cup: this.evaluateDimension(braCup, scheme.female[FemaleMvDimension.BRA_CUP]),
