@@ -77,6 +77,7 @@ const updateChart = () => {
       splitLine: { show: false }
     },
     series: [
+      // 1. 实际得分 (内层)
       {
         type: 'bar',
         data: dimensions.map((d) => ({
@@ -84,10 +85,29 @@ const updateChart = () => {
           itemStyle: { color: d.color }
         })),
         coordinateSystem: 'polar',
-        barWidth: '98%', // 扇区更紧凑，显得更饱满
+        stack: 'happiness-stack', // 开启堆叠
+        barWidth: '98%', 
+        z: 2, // 层级高
         itemStyle: {
-          borderRadius: 0 // 不需要圆角，保持锐利
+          borderRadius: 0
         }
+      },
+      // 2. 剩余填充 (外层背景)
+      {
+        type: 'bar',
+        data: dimensions.map((d) => ({
+          value: 10 - (props.data?.[d.name] || 0), // 补齐到10分
+          itemStyle: { 
+            color: '#f9f9f9', // 浅灰背景
+            borderColor: '#e0e0e0', // 边框
+            borderWidth: 1
+          }
+        })),
+        coordinateSystem: 'polar',
+        stack: 'happiness-stack', // 开启堆叠
+        barWidth: '98%',
+        z: 1, // 层级低
+        silent: true
       }
     ]
   };

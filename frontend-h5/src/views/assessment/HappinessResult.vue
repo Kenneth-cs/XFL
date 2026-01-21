@@ -197,7 +197,11 @@ const renderChart = (dom: HTMLElement, data: any[], isFull: boolean) => {
         type: 'bar',
         data: data.map(d => ({
           value: 10 - d.value,
-          itemStyle: { color: 'transparent' } // 透明
+          itemStyle: { 
+            color: '#f9f9f9', // 淡灰色背景，显示未得分区域
+            borderColor: '#e8e8e8', // 边界线
+            borderWidth: 1
+          } 
         })),
         coordinateSystem: 'polar',
         stack: 'a',

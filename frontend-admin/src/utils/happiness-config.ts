@@ -151,12 +151,16 @@ export function getHappinessChartOption(dimensions: any[], isFull: boolean = fal
         z: 2,
         barGap: '0%'
       },
-      // 2. 空白填充 (填满到 10 分)
+      // 2. 空白填充 (填满到 10 分) - 提供满分边界视觉
       {
         type: 'bar',
         data: data.map(d => ({
           value: 10 - d.value,
-          itemStyle: { color: 'transparent' }
+          itemStyle: { 
+            color: '#f9f9f9', // 淡灰色背景
+            borderColor: '#e8e8e8', // 边界线
+            borderWidth: 1
+          }
         })),
         coordinateSystem: 'polar',
         stack: 'a',
