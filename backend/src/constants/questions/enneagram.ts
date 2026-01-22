@@ -374,8 +374,8 @@ export const ENNEAGRAM_QUESTIONS: EnneagramQuestion[] = [
     questionId: 46,
     content: '以下两个选项我比较倾向于',
     options: [
-      { text: '我常常强调自己与绝大多数人的不同之处，尤其是家境的不同之处', type: 5 },
-      { text: '我常常强调自己与绝大多数人的共同之处，尤其是家境的相同之处', type: 5 },
+      { text: '我常常强调自己与绝大多数人的不同之处，尤其是家境的不同之处', type: 4 },
+      { text: '我常常强调自己与绝大多数人的共同之处，尤其是家境的相同之处', type: 9 },
     ]
   },
   {

@@ -243,9 +243,15 @@ export class MatchService {
     if (dto.initiatorId) {
       qb.andWhere('batch.initiatorId LIKE :iId', { iId: `%${dto.initiatorId}%` });
     }
-    // 注意：手动加载 profile 后，name 筛选需要调整
     if (dto.initiatorPhone) {
       qb.andWhere('initiator.phone LIKE :iPhone', { iPhone: `%${dto.initiatorPhone}%` });
+    }
+    // 发起人姓名筛选（需要JOIN profile表并使用JSON_EXTRACT）
+    if (dto.initiatorName) {
+      qb.innerJoin(AppUserProfile, 'initiatorProfile', 'initiatorProfile.user_id = batch.initiator_id')
+        .andWhere(`JSON_UNQUOTE(JSON_EXTRACT(initiatorProfile.base_info, '$.name')) LIKE :iName`, { 
+          iName: `%${dto.initiatorName}%` 
+        });
     }
 
     // 候选人筛选
@@ -256,9 +262,17 @@ export class MatchService {
           .from(MatchDetail, 'd')
           .leftJoin('d.candidate', 'c');
         
+        // 如果需要按候选人姓名筛选，需要JOIN profile表
+        if (dto.candidateName) {
+          subQuery.leftJoin(AppUserProfile, 'cp', 'cp.user_id = d.candidate_id');
+        }
+        
         const conditions = [];
         if (dto.candidateId) conditions.push(`d.candidate_id LIKE '%${dto.candidateId}%'`);
         if (dto.candidatePhone) conditions.push(`c.phone LIKE '%${dto.candidatePhone}%'`);
+        if (dto.candidateName) {
+          conditions.push(`JSON_UNQUOTE(JSON_EXTRACT(cp.base_info, '$.name')) LIKE '%${dto.candidateName}%'`);
+        }
         
         return 'batch.id IN ' + subQuery.where(conditions.join(' AND ')).getQuery();
       });

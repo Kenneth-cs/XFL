@@ -45,6 +45,8 @@ import axios from 'axios';
 interface PendingUser {
   id: string;
   username: string;
+  name?: string;
+  idCard?: string;
   phone?: string;
   role: string;
   storeId: string;
@@ -57,10 +59,11 @@ const pendingUsers = ref<PendingUser[]>([]);
 
 const columns = [
   { title: '用户ID', dataIndex: 'id', key: 'id', width: 150 },
-  { title: '姓名', dataIndex: 'username', key: 'username' },
+  { title: '姓名', dataIndex: 'name', key: 'name', width: 100 },
+  { title: '身份证号', dataIndex: 'idCard', key: 'idCard', width: 180 },
+  { title: '注册门店', dataIndex: 'storeId', key: 'storeId', width: 100 },
   { title: '手机号', dataIndex: 'phone', key: 'phone', width: 130 },
   { title: '申请角色', key: 'role', width: 120 },
-  { title: '所属门店', dataIndex: 'storeId', key: 'storeId', width: 100 },
   { title: '状态', key: 'status', width: 100 },
   { title: '申请时间', dataIndex: 'createdAt', key: 'createdAt', width: 180 },
   { title: '操作', key: 'actions', width: 180, fixed: 'right' }

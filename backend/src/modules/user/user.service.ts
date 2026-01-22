@@ -240,7 +240,7 @@ export class UserService {
     return await this.sysUserRepository.find({
       where,
       order: { createdAt: 'DESC' },
-      select: ['id', 'storeId', 'username', 'phone', 'role', 'status', 'createdAt', 'updatedAt'],
+      select: ['id', 'storeId', 'username', 'name', 'idCard', 'phone', 'role', 'status', 'createdAt', 'updatedAt'],
     });
   }
 
