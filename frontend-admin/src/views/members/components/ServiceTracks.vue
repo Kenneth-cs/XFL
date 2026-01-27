@@ -264,26 +264,52 @@ const fetchData = async () => {
 };
 
 const handleSearchUser = async (value: string) => {
-  if (!value) return;
+  if (!value || value.trim().length === 0) {
+    searchResults.value = [];
+    return;
+  }
+  
   searchingUser.value = true;
   try {
-    const res = await axios.get('/users/app', {
-      params: { keyword: value, page: 1, limit: 10 } // Assuming backend supports keyword search
-    });
-    // Adapt to actual backend response structure
+    const keyword = value.trim();
+    
+    // 智能判断搜索类型
+    const isId = /^XFL\d+$/i.test(keyword); // XFL开头的ID格式（不区分大小写）
+    const isPhone = /^1[3-9]\d{9}$/.test(keyword); // 标准手机号格式
+    
+    let params: any = { page: 1, limit: 20 };
+    
+    if (isId) {
+      // 用户ID精确搜索
+      params.userId = keyword.toUpperCase(); // 统一转大写
+    } else if (isPhone) {
+      // 手机号搜索
+      params.phone = keyword;
+    } else {
+      // 姓名模糊搜索
+      params.name = keyword;
+    }
+    
+    const res = await axios.get('/users/app', { params });
     const users = res.items || res.data || [];
+    
     searchResults.value = users.map((u: any) => ({
       id: u.id,
-      name: u.profile?.baseInfo?.name || u.phone
+      name: u.profile?.baseInfo?.name || u.phone || '未命名'
     }));
+    
+    if (searchResults.value.length === 0) {
+      message.warning('未找到匹配的用户');
+    }
   } catch (error) {
-    console.error(error);
+    console.error('搜索用户失败:', error);
+    message.error('搜索用户失败');
   } finally {
     searchingUser.value = false;
   }
 };
 
-const showAddModal = () => {
+const showAddModal = async () => {
   isEdit.value = false;
   formState.targetId = undefined;
   formState.eventTime = dayjs();
@@ -295,6 +321,27 @@ const showAddModal = () => {
   formState.myFeedback = undefined;
   formState.peerFeedback = undefined;
   modalVisible.value = true;
+  
+  // 预加载一些用户供选择
+  await loadInitialUsers();
+};
+
+const loadInitialUsers = async () => {
+  searchingUser.value = true;
+  try {
+    const res = await axios.get('/users/app', {
+      params: { page: 1, limit: 20 }
+    });
+    const users = res.items || res.data || [];
+    searchResults.value = users.map((u: any) => ({
+      id: u.id,
+      name: u.profile?.baseInfo?.name || u.phone || '未命名'
+    }));
+  } catch (error) {
+    console.error('加载用户列表失败:', error);
+  } finally {
+    searchingUser.value = false;
+  }
 };
 
 const handleEdit = (record: any) => {

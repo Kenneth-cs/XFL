@@ -253,6 +253,7 @@ export class UserController {
     @Query('storeId') queryStoreId?: string,
     @Query('name') name?: string,
     @Query('phone') phone?: string,
+    @Query('userId') userId?: string,
   ) {
     // 权限控制：超级管理员可查任意门店（或所有），其他人强制查本门店
     const targetStoreId = user.role === SysUserRole.SUPER_ADMIN 
@@ -264,7 +265,7 @@ export class UserController {
     const limit = limitParam ? parseInt(limitParam, 10) : 20;
     
     // 传递当前用户信息，用于手机号脱敏判断
-    return await this.userService.findAllAppUsers(targetStoreId, page, limit, user, name, phone);
+    return await this.userService.findAllAppUsers(targetStoreId, page, limit, user, name, phone, userId);
   }
 
   /**

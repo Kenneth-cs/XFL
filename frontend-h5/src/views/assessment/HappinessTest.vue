@@ -17,7 +17,7 @@
 
     <!-- 维度列表 -->
     <div class="dimensions-container">
-      <van-collapse v-model="activeDimension" accordion>
+      <van-collapse v-model="activeDimensions">
         <van-collapse-item 
           v-for="dim in dimensions" 
           :key="dim.id"
@@ -124,7 +124,7 @@ const questions = ref<HappinessQuestion[]>([])
 const dimensions = ref<HappinessDimension[]>([])
 const answers = ref<Record<string, number>>({})
 const loading = ref(false)
-const activeDimension = ref<number>(1) // 默认展开第一个维度
+const activeDimensions = ref<number[]>([]) // 默认展开所有维度
 
 // 计算属性
 const totalQuestions = computed(() => questions.value.length)
@@ -231,6 +231,9 @@ const loadQuestions = async () => {
         targetScore: 10
       }))
     }
+    
+    // 自动展开所有维度
+    activeDimensions.value = dimensions.value.map(d => d.id)
   } catch (error) {
     console.error('加载题目失败', error)
     showToast('加载题目失败，请重试')

@@ -98,7 +98,8 @@
                   <a-form-item label="婚况">
                     <a-select v-model:value="formState.baseInfo.marriage">
                       <a-select-option value="未婚">未婚</a-select-option>
-                      <a-select-option value="离异">离异</a-select-option>
+                      <a-select-option value="离异未育">离异未育</a-select-option>
+                      <a-select-option value="离异带孩">离异带孩</a-select-option>
                       <a-select-option value="丧偶">丧偶</a-select-option>
                     </a-select>
                   </a-form-item>

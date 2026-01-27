@@ -367,13 +367,18 @@ export class UserService {
     };
   }
 
-  async findAllAppUsers(storeId?: string, page = 1, limit = 20, currentUser?: CurrentUserData, name?: string, phone?: string) {
-    // 使用 QueryBuilder 来支持姓名和手机号搜索
+  async findAllAppUsers(storeId?: string, page = 1, limit = 20, currentUser?: CurrentUserData, name?: string, phone?: string, userId?: string) {
+    // 使用 QueryBuilder 来支持姓名、手机号和用户ID搜索
     const qb = this.appUserRepository.createQueryBuilder('user');
     
     // 门店过滤
     if (storeId) {
       qb.andWhere('user.storeId = :storeId', { storeId });
+    }
+    
+    // 用户ID精确搜索（优先级最高）
+    if (userId) {
+      qb.andWhere('user.id = :userId', { userId });
     }
     
     // 手机号搜索
