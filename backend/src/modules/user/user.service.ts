@@ -472,9 +472,19 @@ export class UserService {
       happiness: assessments.find(a => a.type === 3),
     };
 
+    // 获取服务红娘信息
+    let serviceMatchmaker = null;
+    if (profile.serviceMatchmakerId) {
+      serviceMatchmaker = await this.sysUserRepository.findOne({
+        where: { id: profile.serviceMatchmakerId },
+        select: ['id', 'name', 'username', 'phone']
+      });
+    }
+
     return {
       ...profile,
       assessmentResults,
+      serviceMatchmaker, // 返回红娘详细信息
     };
   }
 
@@ -539,7 +549,7 @@ export class UserService {
     // 权限校验：普通红娘只能编辑自己服务的会员
     if (currentUser?.role === SysUserRole.MATCHMAKER) {
       if (profile.serviceMatchmakerId !== currentUser.userId) {
-        throw new ForbiddenException('您只能编辑自己服务的会员档案');
+        throw new ForbiddenException(`您只能编辑自己服务的会员档案 (您的ID: ${currentUser.userId}, 归属红娘ID: ${profile.serviceMatchmakerId})`);
       }
     }
 

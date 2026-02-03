@@ -1067,6 +1067,9 @@ const fetchProfile = async () => {
     // 如果是门店管理员或超管，且有storeId，加载该门店的红娘列表
     if (canAssignMatchmaker.value && data.user?.storeId) {
       fetchMatchmakers(data.user.storeId);
+    } else if (data.serviceMatchmaker) {
+      // 如果是普通红娘或无法获取列表，但后端返回了当前分配的红娘信息，将其加入列表以显示
+      matchmakers.value = [data.serviceMatchmaker];
     }
     
   } catch (error: any) {
@@ -1093,11 +1096,18 @@ const fetchMatchmakers = async (storeId: string) => {
 const handleSave = async () => {
   saving.value = true;
   try {
-    await axios.patch(`/users/profile/${userId}`, {
+    const payload: any = {
       baseInfo: formState.baseInfo,
-      extInfo: formState.extInfo,
-      serviceMatchmakerId: formState.serviceMatchmakerId
-    });
+      extInfo: formState.extInfo
+    };
+
+    // 只有有权限分配红娘的角色，才发送 serviceMatchmakerId 字段
+    // 避免普通红娘保存时因发送此字段（即使未修改）而被后端 403 拦截
+    if (canAssignMatchmaker.value) {
+      payload.serviceMatchmakerId = formState.serviceMatchmakerId;
+    }
+
+    await axios.patch(`/users/profile/${userId}`, payload);
     message.success('保存成功');
   } catch (error: any) {
     message.error(error.response?.data?.message || '保存失败');
