@@ -162,7 +162,7 @@
           v-model:current="page"
           v-model:pageSize="limit"
           :total="total"
-          @change="handleSearch"
+          @change="fetchMatches"
           show-size-changer
         />
       </div>
@@ -320,6 +320,12 @@ const fetchMatches = async () => {
       }
     }) as any;
     console.log('🔍 [获取匹配列表] 响应数据:', res);
+    console.log('🔍 [批次数量]:', res.items?.length || 0);
+    if (res.items && res.items[0]) {
+      console.log('🔍 [第一个批次]:', res.items[0]);
+      console.log('🔍 [发起人数据]:', res.items[0].initiator);
+      console.log('🔍 [发起人happiness]:', res.items[0].initiator?.happiness);
+    }
     batches.value = res.items || res || [];
     total.value = res.total || 0;
   } catch (error) {

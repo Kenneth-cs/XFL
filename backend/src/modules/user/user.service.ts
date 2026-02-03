@@ -536,6 +536,13 @@ export class UserService {
       throw new NotFoundException('用户档案不存在');
     }
 
+    // 权限校验：普通红娘只能编辑自己服务的会员
+    if (currentUser?.role === SysUserRole.MATCHMAKER) {
+      if (profile.serviceMatchmakerId !== currentUser.userId) {
+        throw new ForbiddenException('您只能编辑自己服务的会员档案');
+      }
+    }
+
     // 权限校验：分配服务红娘（service_matchmaker_id）只能由门店负责人及以上角色操作
     if (updateDto.serviceMatchmakerId !== undefined) {
       // 检查当前用户角色

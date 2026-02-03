@@ -6,6 +6,7 @@ import { VantResolver } from 'unplugin-vue-components/resolvers'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/h5/',  // 重要：设置基础路径
   plugins: [
     vue(),
     Components({
