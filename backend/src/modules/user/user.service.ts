@@ -367,7 +367,7 @@ export class UserService {
     };
   }
 
-  async findAllAppUsers(storeId?: string, page = 1, limit = 20, currentUser?: CurrentUserData, name?: string, phone?: string, userId?: string) {
+  async findAllAppUsers(storeId?: string, page = 1, limit = 20, currentUser?: CurrentUserData, name?: string, phone?: string, userId?: string, serviceMatchmakerId?: string) {
     // 使用 QueryBuilder 来支持姓名、手机号和用户ID搜索
     const qb = this.appUserRepository.createQueryBuilder('user');
     
@@ -386,10 +386,20 @@ export class UserService {
       qb.andWhere('user.phone LIKE :phone', { phone: `%${phone}%` });
     }
     
-    // 姓名搜索需要联表查询 profile（通过JSON字段）
-    if (name) {
+    // 姓名搜索或服务红娘筛选需要联表查询 profile（通过JSON字段）
+    // 注意：如果已经为了 name leftJoin 了，就不要重复 join
+    // 实际上 QueryBuilder 智能处理 join，但我们最好显式一点
+    if (name || serviceMatchmakerId) {
+      // 检查是否已经 join 了 profile（这里是简单的线性逻辑，目前没有其他地方join）
       qb.leftJoin('app_user_profile', 'profile', 'profile.user_id = user.id');
-      qb.andWhere("JSON_EXTRACT(profile.base_info, '$.name') LIKE :name", { name: `%${name}%` });
+      
+      if (name) {
+        qb.andWhere("JSON_EXTRACT(profile.base_info, '$.name') LIKE :name", { name: `%${name}%` });
+      }
+
+      if (serviceMatchmakerId) {
+        qb.andWhere('profile.service_matchmaker_id = :serviceMatchmakerId', { serviceMatchmakerId });
+      }
     }
     
     // 分页和排序

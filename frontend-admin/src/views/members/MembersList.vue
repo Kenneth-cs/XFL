@@ -26,6 +26,11 @@
             @pressEnter="handleSearch"
           />
         </a-form-item>
+        <a-form-item v-if="isMatchmaker">
+          <a-checkbox v-model:checked="searchForm.onlyMyUsers" @change="handleSearch">
+            只看我负责的用户
+          </a-checkbox>
+        </a-form-item>
         <a-form-item label="门店" v-if="isSuperAdmin">
           <a-select 
             v-model:value="searchForm.storeId" 
@@ -100,6 +105,7 @@ import axios from 'axios';
 const router = useRouter();
 const userInfo = JSON.parse(localStorage.getItem('admin_user') || '{}');
 const isSuperAdmin = computed(() => userInfo.role === 'super_admin');
+const isMatchmaker = computed(() => userInfo.role === 'matchmaker');
 
 interface Member {
   id: string;
@@ -132,7 +138,8 @@ const stores = ref<Store[]>([]);
 const searchForm = reactive({
   name: '',
   phone: '',
-  storeId: ''
+  storeId: '',
+  onlyMyUsers: false
 });
 
 const pagination = reactive({
@@ -182,6 +189,11 @@ const fetchMembers = async () => {
     if (isSuperAdmin.value && searchForm.storeId) {
       params.storeId = searchForm.storeId;
     }
+
+    // 红娘筛选只看自己
+    if (isMatchmaker.value && searchForm.onlyMyUsers) {
+      params.serviceMatchmakerId = userInfo.id;
+    }
     
     const res = await axios.get('/users/app', { params });
     const data = res.data || res;
@@ -209,6 +221,7 @@ const handleReset = () => {
   searchForm.name = '';
   searchForm.phone = '';
   searchForm.storeId = '';
+  searchForm.onlyMyUsers = false;
   pagination.current = 1;
   fetchMembers();
 };
