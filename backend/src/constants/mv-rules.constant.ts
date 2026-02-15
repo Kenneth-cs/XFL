@@ -45,10 +45,10 @@ export interface MvCalculationScheme {
 }
 
 /**
- * 1. 上海北京地区方案
+ * 4. 上海北京地区方案
  */
 export const BEIJING_SHANGHAI_SCHEME: MvCalculationScheme = {
-  id: 1,
+  id: 4,
   code: 'BEIJING_SHANGHAI',
   name: '婚恋价值上海北京地区',
   male: {
@@ -163,10 +163,10 @@ export const BEIJING_SHANGHAI_SCHEME: MvCalculationScheme = {
 };
 
 /**
- * 2. 东北新疆地区方案
+ * 5. 东北新疆地区方案
  */
 export const NORTHEAST_XINJIANG_SCHEME: MvCalculationScheme = {
-  id: 2,
+  id: 5,
   code: 'NORTHEAST_XINJIANG',
   name: '婚恋价值东北新疆地区',
   male: {
@@ -281,10 +281,10 @@ export const NORTHEAST_XINJIANG_SCHEME: MvCalculationScheme = {
 };
 
 /**
- * 3. 广东周边地区方案
+ * 1. 广东周边地区方案
  */
 export const GUANGDONG_SCHEME: MvCalculationScheme = {
-  id: 3,
+  id: 1,
   code: 'GUANGDONG',
   name: '婚恋价值广东周边地区',
   male: {
@@ -399,10 +399,10 @@ export const GUANGDONG_SCHEME: MvCalculationScheme = {
 };
 
 /**
- * 4. 江浙周边地区方案
+ * 2. 江浙周边地区方案
  */
 export const JIANGZHE_SCHEME: MvCalculationScheme = {
-  id: 4,
+  id: 2,
   code: 'JIANGZHE',
   name: '婚恋价值江浙周边地区',
   male: {
@@ -516,10 +516,10 @@ export const JIANGZHE_SCHEME: MvCalculationScheme = {
 };
 
 /**
- * 5. 全国普适版方案
+ * 3. 全国普适版方案
  */
 export const NATIONWIDE_SCHEME: MvCalculationScheme = {
-  id: 5,
+  id: 3,
   code: 'NATIONWIDE',
   name: '婚恋价值全国普适版',
   male: {
@@ -637,9 +637,9 @@ export const NATIONWIDE_SCHEME: MvCalculationScheme = {
  * 所有MV计算方案映射表
  */
 export const MV_SCHEMES: Record<number, MvCalculationScheme> = {
-  1: BEIJING_SHANGHAI_SCHEME,
-  2: NORTHEAST_XINJIANG_SCHEME,
-  3: GUANGDONG_SCHEME,
-  4: JIANGZHE_SCHEME,
-  5: NATIONWIDE_SCHEME
+  1: GUANGDONG_SCHEME,
+  2: JIANGZHE_SCHEME,
+  3: NATIONWIDE_SCHEME,
+  4: BEIJING_SHANGHAI_SCHEME,
+  5: NORTHEAST_XINJIANG_SCHEME
 };
