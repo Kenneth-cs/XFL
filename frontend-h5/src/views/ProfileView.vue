@@ -113,7 +113,7 @@ async function handleLogout() {
 <style scoped>
 .profile {
   min-height: 100vh;
-  background-color: #fff9fb;
+  background-color: #FFF7E6;
   padding-bottom: 20px;
 }
 
@@ -127,24 +127,24 @@ async function handleLogout() {
 
 /* 自定义按钮样式 */
 :deep(.van-button--danger) {
-  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+  background: linear-gradient(135deg, #FF7D40 0%, #FFC069 100%);
   border: none;
-  color: #5d4037;
+  color: white;
   font-weight: 500;
 }
 
 /* 自定义 NavBar 样式 */
 :deep(.van-nav-bar) {
-  background: linear-gradient(135deg, #ffb7c5 0%, #ffdde1 100%);
+  background: linear-gradient(135deg, #FF7D40 0%, #FFC069 100%);
 }
 
 :deep(.van-nav-bar__title) {
-  color: #5d4037;
+  color: white;
   font-weight: 600;
 }
 
 :deep(.van-nav-bar .van-icon) {
-  color: #5d4037;
+  color: white;
 }
 </style>
 

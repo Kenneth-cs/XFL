@@ -11,7 +11,7 @@
       <van-progress 
         :percentage="progressPercentage" 
         stroke-width="4" 
-        color="#84fab0"
+        color="#FF7D40"
       />
     </div>
 
@@ -250,7 +250,7 @@ onMounted(() => {
 <style scoped>
 .happiness-test {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fffcf5 0%, #fff0f0 100%);
+  background: linear-gradient(135deg, #FFF7E6 0%, #FFFDF5 100%);
   padding-bottom: 100px;
 }
 
@@ -281,7 +281,7 @@ onMounted(() => {
 .answered-count {
   font-size: 24px;
   font-weight: bold;
-  color: #ffb7c5;
+  color: #FF7D40;
 }
 
 .divider {

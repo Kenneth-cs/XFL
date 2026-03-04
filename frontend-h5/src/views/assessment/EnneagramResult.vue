@@ -211,7 +211,7 @@ onMounted(async () => {
 <style scoped>
 .enneagram-result {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fff0f5 0%, #fff9fb 100%);
+  background: linear-gradient(135deg, #FFF7E6 0%, #FFFDF5 100%);
   padding: 20px;
   padding-bottom: 40px;
 }
@@ -280,7 +280,7 @@ onMounted(async () => {
 .bar {
   width: 100%;
   max-width: 32px;
-  background: linear-gradient(to top, #ffb7c5, #ffdde1);
+  background: linear-gradient(to top, #FFC069, #FFD591);
   border-radius: 4px 4px 0 0;
   position: relative;
   transition: all 0.3s;
@@ -289,9 +289,9 @@ onMounted(async () => {
 }
 
 .bar.highlight {
-  background: linear-gradient(to top, #ff8fa3, #ffb7c5);
+  background: linear-gradient(to top, #FF7D40, #FFC069);
   opacity: 1;
-  box-shadow: 0 2px 8px rgba(255, 143, 163, 0.4);
+  box-shadow: 0 2px 8px rgba(255, 125, 64, 0.4);
 }
 
 .bar-value {
@@ -301,7 +301,7 @@ onMounted(async () => {
   transform: translateX(-50%);
   font-size: 11px;
   font-weight: bold;
-  color: #ff8fa3;
+  color: #FF7D40;
   white-space: nowrap;
 }
 
@@ -351,7 +351,7 @@ onMounted(async () => {
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-left: 4px solid #ffb7c5;
+  border-left: 4px solid #FFC069;
 }
 
 .card-header {
@@ -364,8 +364,8 @@ onMounted(async () => {
 
 .type-badge {
   display: inline-block;
-  background: linear-gradient(135deg, #ffb7c5 0%, #ffdde1 100%);
-  color: #5d4037;
+  background: linear-gradient(135deg, #FF7D40 0%, #FFC069 100%);
+  color: white;
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 12px;
@@ -382,7 +382,7 @@ onMounted(async () => {
 .type-percentage {
   font-size: 18px;
   font-weight: bold;
-  color: #ff8fa3;
+  color: #FF7D40;
 }
 
 .type-description {

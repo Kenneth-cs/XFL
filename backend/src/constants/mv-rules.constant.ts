@@ -96,11 +96,11 @@ export const BEIJING_SHANGHAI_SCHEME: MvCalculationScheme = {
       { condition: (age) => age >= 50 && age <= 60, score: 4.5, label: '50-60岁' }
     ],
     [MaleMvDimension.COMMITMENT]: [
-      { condition: (s) => s >= 91 && s <= 100, score: 12.5, label: '幸福力评测结果91-100' },
-      { condition: (s) => s >= 81 && s <= 90, score: 10.5, label: '81-90' },
-      { condition: (s) => s >= 71 && s <= 80, score: 8.5, label: '71-80' },
-      { condition: (s) => s >= 61 && s <= 70, score: 6.5, label: '61-70' },
-      { condition: (s) => s < 61, score: 4.5, label: '60分以下' }
+      { condition: (s) => s >= 12.5, score: 12.5, label: '极高（91-100分）' },
+      { condition: (s) => s >= 10.5, score: 10.5, label: '高（81-90分）' },
+      { condition: (s) => s >= 8.5, score: 8.5, label: '中（71-80分）' },
+      { condition: (s) => s >= 6.5, score: 6.5, label: '低（61-70分）' },
+      { condition: (s) => s > 0, score: 4.5, label: '极低（60分以下）' }
     ]
   },
   female: {
@@ -214,11 +214,11 @@ export const NORTHEAST_XINJIANG_SCHEME: MvCalculationScheme = {
       { condition: (age) => age >= 50 && age <= 60, score: 4.5, label: '50-60岁' }
     ],
     [MaleMvDimension.COMMITMENT]: [
-      { condition: (s) => s >= 91 && s <= 100, score: 12.5, label: '幸福力评测结果91-100' },
-      { condition: (s) => s >= 81 && s <= 90, score: 10.5, label: '81-90' },
-      { condition: (s) => s >= 71 && s <= 80, score: 8.5, label: '71-80' },
-      { condition: (s) => s >= 61 && s <= 70, score: 6.5, label: '61-70' },
-      { condition: (s) => s < 61, score: 4.5, label: '60分以下' }
+      { condition: (s) => s >= 12.5, score: 12.5, label: '极高（91-100分）' },
+      { condition: (s) => s >= 10.5, score: 10.5, label: '高（81-90分）' },
+      { condition: (s) => s >= 8.5, score: 8.5, label: '中（71-80分）' },
+      { condition: (s) => s >= 6.5, score: 6.5, label: '低（61-70分）' },
+      { condition: (s) => s > 0, score: 4.5, label: '极低（60分以下）' }
     ]
   },
   female: {
@@ -332,11 +332,11 @@ export const GUANGDONG_SCHEME: MvCalculationScheme = {
       { condition: (age) => age >= 50 && age <= 60, score: 4.5, label: '50-60岁' }
     ],
     [MaleMvDimension.COMMITMENT]: [
-      { condition: (s) => s >= 91 && s <= 100, score: 12.5, label: '幸福力评测结果91-100' },
-      { condition: (s) => s >= 81 && s <= 90, score: 10.5, label: '81-90' },
-      { condition: (s) => s >= 71 && s <= 80, score: 8.5, label: '71-80' },
-      { condition: (s) => s >= 61 && s <= 70, score: 6.5, label: '61-70' },
-      { condition: (s) => s < 61, score: 4.5, label: '60分以下' }
+      { condition: (s) => s >= 12.5, score: 12.5, label: '极高（91-100分）' },
+      { condition: (s) => s >= 10.5, score: 10.5, label: '高（81-90分）' },
+      { condition: (s) => s >= 8.5, score: 8.5, label: '中（71-80分）' },
+      { condition: (s) => s >= 6.5, score: 6.5, label: '低（61-70分）' },
+      { condition: (s) => s > 0, score: 4.5, label: '极低（60分以下）' }
     ]
   },
   female: {
@@ -450,11 +450,11 @@ export const JIANGZHE_SCHEME: MvCalculationScheme = {
       { condition: (age) => age >= 50 && age <= 60, score: 4.5, label: '50-60岁' }
     ],
     [MaleMvDimension.COMMITMENT]: [
-      { condition: (s) => s >= 91 && s <= 100, score: 12.5, label: '幸福力评测结果91-100' },
-      { condition: (s) => s >= 81 && s <= 90, score: 10.5, label: '81-90' },
-      { condition: (s) => s >= 71 && s <= 80, score: 8.5, label: '71-80' },
-      { condition: (s) => s >= 61 && s <= 70, score: 6.5, label: '61-70' },
-      { condition: (s) => s < 61, score: 4.5, label: '60分以下' }
+      { condition: (s) => s >= 12.5, score: 12.5, label: '极高（91-100分）' },
+      { condition: (s) => s >= 10.5, score: 10.5, label: '高（81-90分）' },
+      { condition: (s) => s >= 8.5, score: 8.5, label: '中（71-80分）' },
+      { condition: (s) => s >= 6.5, score: 6.5, label: '低（61-70分）' },
+      { condition: (s) => s > 0, score: 4.5, label: '极低（60分以下）' }
     ]
   },
   female: {
@@ -567,11 +567,11 @@ export const NATIONWIDE_SCHEME: MvCalculationScheme = {
       { condition: (age) => age >= 50 && age <= 60, score: 4.5, label: '50-60岁' }
     ],
     [MaleMvDimension.COMMITMENT]: [
-      { condition: (s) => s >= 91 && s <= 100, score: 12.5, label: '幸福力评测结果91-100' },
-      { condition: (s) => s >= 81 && s <= 90, score: 10.5, label: '81-90' },
-      { condition: (s) => s >= 71 && s <= 80, score: 8.5, label: '71-80' },
-      { condition: (s) => s >= 61 && s <= 70, score: 6.5, label: '61-70' },
-      { condition: (s) => s < 61, score: 4.5, label: '60分以下' }
+      { condition: (s) => s >= 12.5, score: 12.5, label: '极高（91-100分）' },
+      { condition: (s) => s >= 10.5, score: 10.5, label: '高（81-90分）' },
+      { condition: (s) => s >= 8.5, score: 8.5, label: '中（71-80分）' },
+      { condition: (s) => s >= 6.5, score: 6.5, label: '低（61-70分）' },
+      { condition: (s) => s > 0, score: 4.5, label: '极低（60分以下）' }
     ]
   },
   female: {

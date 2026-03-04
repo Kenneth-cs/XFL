@@ -1157,9 +1157,20 @@ const handleCalculateMv = async () => {
     });
     return;
   }
-  
+
   calculating.value = true;
   try {
+    // 2. 先自动保存最新档案信息，确保后台计算使用最新数据
+    const payload: any = {
+      baseInfo: formState.baseInfo,
+      extInfo: formState.extInfo
+    };
+    if (canAssignMatchmaker.value) {
+      payload.serviceMatchmakerId = formState.serviceMatchmakerId;
+    }
+    await axios.patch(`/users/profile/${userId}`, payload);
+
+    // 3. 再发起 MV 计算
     const res = await axios.post(`/mv/calculate/${userId}`);
     const data = res.data || res;
     

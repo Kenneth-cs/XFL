@@ -491,14 +491,14 @@ async function onSubmit() {
 <style scoped>
 .register {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fff0f5 0%, #fff9fb 100%);
+  background: linear-gradient(135deg, #FFF7E6 0%, #FFFDF5 100%);
   padding-bottom: 20px;
 }
 
 :deep(.van-button--primary) {
-  background: linear-gradient(135deg, #ffb7c5 0%, #ffdde1 100%);
+  background: linear-gradient(135deg, #FF7D40 0%, #FFC069 100%);
   border: none;
-  color: #5d4037;
+  color: #fff;
 }
 
 .submit-btn {

@@ -201,7 +201,7 @@ onMounted(() => {
 <style scoped>
 .attachment-test {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fef6fa 0%, #f3f0ff 100%);
+  background: linear-gradient(135deg, #FFF7E6 0%, #FFFDF5 100%);
   padding-bottom: 120px;
 }
 
@@ -234,7 +234,7 @@ onMounted(() => {
 .selected-count {
   font-size: 20px;
   font-weight: bold;
-  color: #b39ddb; /* 柔和紫 */
+  color: #FF7D40; /* 橙色 */
 }
 
 .divider {

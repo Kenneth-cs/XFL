@@ -89,10 +89,11 @@ export const EDUCATION_OPTIONS = [
 ];
 
 export const COMMITMENT_SCORE_OPTIONS = [
-  { label: '12.5 (极高)', value: 12.5 },
-  { label: '10.5 (高)', value: 10.5 },
-  { label: '8.5 (中)', value: 8.5 },
-  { label: '6.5 (低)', value: 6.5 }
+  { label: '12.5（极高）', value: 12.5 },
+  { label: '10.5（高）', value: 10.5 },
+  { label: '8.5（中）', value: 8.5 },
+  { label: '6.5（低）', value: 6.5 },
+  { label: '4.5（极低）', value: 4.5 }
 ];
 
 export const EQ_OPTIONS = [

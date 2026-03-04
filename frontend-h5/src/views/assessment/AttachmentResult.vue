@@ -12,7 +12,7 @@
         <div class="insufficient-notice">
           <van-icon name="info-o" size="24" color="#fa8c16" />
           <h3 class="insufficient-title">得分不足</h3>
-          <p class="insufficient-desc">三个维度得分都低于5分，无法给出具体的依恋类型</p>
+          <p class="insufficient-desc">三个维度得分都低于5分，无法给出具体的依恋类型，建议重新测试</p>
           <p class="insufficient-tip">请查看下方三维度得分详情，或联系您的专属红娘老师进行深入沟通</p>
         </div>
       </div>
@@ -238,7 +238,7 @@ onMounted(async () => {
 <style scoped>
 .attachment-result {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fef6fa 0%, #f3f0ff 100%);
+  background: linear-gradient(135deg, #FFF7E6 0%, #FFFDF5 100%);
   padding: 20px;
 }
 
@@ -338,8 +338,8 @@ onMounted(async () => {
 
 .type-badge {
   display: inline-block;
-  background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-  color: #5d4037;
+  background: linear-gradient(135deg, #FF7D40 0%, #FFC069 100%);
+  color: white;
   padding: 8px 24px;
   border-radius: 20px;
   font-size: 16px;
@@ -360,8 +360,8 @@ onMounted(async () => {
 
 .combo-text {
   display: inline-block;
-  background: rgba(255, 154, 158, 0.15);
-  color: #ff6b6b;
+  background: rgba(255, 125, 64, 0.15);
+  color: #FF7D40;
   padding: 6px 16px;
   border-radius: 12px;
   font-size: 13px;

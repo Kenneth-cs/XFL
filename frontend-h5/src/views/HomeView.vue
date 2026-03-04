@@ -3,7 +3,7 @@
     <!-- 顶部 Logo 和 标题 -->
     <div class="header">
       <div class="logo">
-        <span class="logo-icon">❤</span>
+        <img src="/logo.png" alt="Logo" class="logo-img" />
         <span class="logo-text">幸福力</span>
       </div>
       <!-- 如果已登录，显示"退出登录"按钮（方便测试） -->
@@ -112,7 +112,7 @@ const handleLogout = () => {
 <style scoped>
 .home-landing {
   min-height: 100vh;
-  background: linear-gradient(180deg, #fff 0%, #fff9fb 100%);
+  background: linear-gradient(180deg, #fff 0%, #FFF7E6 100%);
   padding-bottom: 80px;
   overflow-x: hidden;
 }
@@ -130,9 +130,10 @@ const handleLogout = () => {
   gap: 8px;
 }
 
-.logo-icon {
-  font-size: 24px;
-  color: #ff8fa3;
+.logo-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .logo-text {
@@ -152,10 +153,10 @@ const handleLogout = () => {
 
 .main-title {
   font-size: 48px;
-  color: #ff8fa3; /* 主色调粉 */
+  color: #FF7D40; /* 主色调橙 */
   margin-bottom: 10px;
   font-weight: 800;
-  text-shadow: 2px 2px 4px rgba(255, 143, 163, 0.2);
+  text-shadow: 2px 2px 4px rgba(255, 125, 64, 0.2);
 }
 
 .sub-title {
@@ -163,26 +164,26 @@ const handleLogout = () => {
   color: #5d4037;
   margin-bottom: 30px;
   font-weight: 500;
-  background: linear-gradient(90deg, #ff8fa3, #ffb7c5);
+  background: linear-gradient(90deg, #FF7D40, #FFC069);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   display: inline-block;
   padding: 5px 15px;
   border-radius: 20px;
-  background-color: #fff0f5;
+  background-color: #FFF7E6;
 }
 
 .hero-image-placeholder {
   width: 100%;
   height: 200px;
-  background: linear-gradient(135deg, #ffdde1 0%, #ee9ca7 100%);
+  background: linear-gradient(135deg, #FFC069 0%, #FFD591 100%);
   border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 30px;
-  box-shadow: 0 10px 30px rgba(255, 183, 197, 0.3);
+  box-shadow: 0 10px 30px rgba(255, 125, 64, 0.3);
 }
 
 .placeholder-content {
@@ -201,7 +202,7 @@ const handleLogout = () => {
   height: 50px;
   font-size: 18px;
   letter-spacing: 2px;
-  box-shadow: 0 4px 15px rgba(255, 183, 197, 0.4);
+  box-shadow: 0 4px 15px rgba(255, 125, 64, 0.4);
 }
 
 .intro-section {
@@ -233,12 +234,12 @@ const handleLogout = () => {
 
 .divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, #ffb7c5, transparent);
+  background: linear-gradient(90deg, transparent, #FFC069, transparent);
   margin: 16px 0;
 }
 
 .desc {
-  color: #ff8fa3;
+  color: #FF7D40;
   text-align: center;
   font-weight: 500;
   font-style: italic;
@@ -263,7 +264,7 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #fff9fb;
+  background: #FFF7E6;
   padding: 12px;
   border-radius: 10px;
 }
@@ -271,7 +272,7 @@ const handleLogout = () => {
 .num {
   width: 24px;
   height: 24px;
-  background: #ffb7c5;
+  background: #FFC069;
   color: white;
   border-radius: 50%;
   display: flex;
@@ -284,9 +285,9 @@ const handleLogout = () => {
 
 /* 覆盖Vant按钮样式 */
 :deep(.van-button--primary) {
-  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+  background: linear-gradient(135deg, #FF7D40 0%, #FFC069 100%);
   border: none;
-  color: #5d4037;
+  color: #fff;
   font-weight: 600;
 }
 </style>

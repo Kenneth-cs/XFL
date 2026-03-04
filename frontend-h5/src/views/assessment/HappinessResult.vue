@@ -157,7 +157,7 @@ const renderChart = (dom: HTMLElement, data: any[], isFull: boolean) => {
         fontSize: 14,
         fontWeight: 'bold'
       },
-      backgroundColor: '#f56c6c', // 红色中心圆
+      backgroundColor: '#FF7D40', // 橙色中心圆
       borderRadius: 30,
       padding: [15, 15] // 调整内圆大小
     },
@@ -302,7 +302,7 @@ onMounted(async () => {
 <style scoped>
 .happiness-result {
   min-height: 100vh;
-  background: #fff;
+  background: #FFF7E6;
   padding: 20px;
   padding-bottom: 40px;
 }

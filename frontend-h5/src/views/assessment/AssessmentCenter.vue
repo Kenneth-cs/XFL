@@ -154,7 +154,7 @@ onMounted(() => {
 <style scoped>
 .assessment-center {
   min-height: 100vh;
-  background-color: #fff9fb;
+  background-color: #FFF7E6;
   padding: 20px;
 }
 
@@ -190,13 +190,13 @@ onMounted(() => {
 }
 
 .header-action :deep(.van-button--plain.van-button--primary) {
-  border-color: #ffb7c5;
-  color: #5d4037;
+  border-color: #FF7D40;
+  color: #FF7D40;
   background: white;
 }
 
 .header-action :deep(.van-button--plain.van-button--primary:active) {
-  background: #fff0f5;
+  background: #FFF7E6;
 }
 
 .assessment-list {
@@ -235,7 +235,7 @@ onMounted(() => {
 }
 
 .enneagram-icon {
-  background: linear-gradient(135deg, #ffc3a0 0%, #ffafbd 100%);
+  background: linear-gradient(135deg, #FF7D40 0%, #FFC069 100%);
 }
 
 .attachment-icon {
@@ -276,8 +276,8 @@ onMounted(() => {
 }
 
 .status-badge.completed {
-  background-color: #fff0f5;
-  color: #ff8fa3;
+  background-color: #FFF7E6;
+  color: #FF7D40;
 }
 
 .card-action {

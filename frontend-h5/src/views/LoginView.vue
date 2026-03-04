@@ -81,7 +81,7 @@ function goToRegister() {
 .login {
   min-height: 100vh;
   padding: 40px 20px;
-  background: linear-gradient(135deg, #fff0f5 0%, #fff9fb 100%); /* 极浅粉背景 */
+  background: linear-gradient(135deg, #FFF7E6 0%, #FFFDF5 100%); /* 极浅橙背景 */
 }
 
 .header h1, .header p {
@@ -90,9 +90,9 @@ function goToRegister() {
 
 /* 按钮样式需要在全局或深度选择器中覆盖 */
 :deep(.van-button--primary) {
-  background: linear-gradient(135deg, #ffb7c5 0%, #ffdde1 100%);
+  background: linear-gradient(135deg, #FF7D40 0%, #FFC069 100%);
   border: none;
-  color: #5d4037;
+  color: #fff;
 }
 
 .header {

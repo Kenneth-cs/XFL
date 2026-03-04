@@ -9,7 +9,7 @@
       <van-progress 
         :percentage="progressPercentage" 
         stroke-width="4" 
-        color="#1989fa"
+        color="#FF7D40"
         class="progress-bar"
       />
     </div>
@@ -242,7 +242,7 @@ onMounted(() => {
 <style scoped>
 .enneagram-test {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fff0f5 0%, #fff9fb 100%);
+  background: linear-gradient(135deg, #FFF7E6 0%, #FFFDF5 100%);
   display: flex;
   flex-direction: column;
 }
@@ -262,7 +262,7 @@ onMounted(() => {
 .current-num {
   font-size: 24px;
   font-weight: bold;
-  color: #ffb7c5;
+  color: #FF7D40;
 }
 
 .total-num {
@@ -292,8 +292,8 @@ onMounted(() => {
 .question-label {
   display: inline-block;
   font-size: 12px;
-  color: #ff8fa3;
-  background: #fff0f5;
+  color: #FF7D40;
+  background: #FFF7E6;
   padding: 4px 12px;
   border-radius: 12px;
   margin-bottom: 12px;
@@ -328,9 +328,9 @@ onMounted(() => {
 }
 
 .option-item.selected {
-  background: linear-gradient(135deg, #ffb7c5 0%, #ffdde1 100%);
-  color: #5d4037;
-  box-shadow: 0 4px 16px rgba(255, 183, 197, 0.4);
+  background: linear-gradient(135deg, #FF7D40 0%, #FFC069 100%);
+  color: white;
+  box-shadow: 0 4px 16px rgba(255, 125, 64, 0.4);
 }
 
 .option-badge {
@@ -377,9 +377,9 @@ onMounted(() => {
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #ffb7c5 0%, #ffdde1 100%);
+  background: linear-gradient(135deg, #FF7D40 0%, #FFC069 100%);
   border: none;
-  color: #5d4037;
+  color: white;
 }
 
 /* 导航弹窗 */
@@ -406,13 +406,13 @@ onMounted(() => {
 }
 
 .nav-item.answered {
-  background: #fff0f5;
-  color: #ff8fa3;
+  background: #FFF7E6;
+  color: #FF7D40;
 }
 
 .nav-item.current {
-  background: linear-gradient(135deg, #ffb7c5 0%, #ffdde1 100%);
-  color: #5d4037;
+  background: linear-gradient(135deg, #FF7D40 0%, #FFC069 100%);
+  color: white;
 }
 
 .nav-item:active {
