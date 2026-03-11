@@ -36,18 +36,31 @@ const initChart = () => {
   updateChart();
 };
 
+// 统一将不同格式的 happiness 数据转换为 { 维度名: 分数 } 的 Map
+// 兼容两种格式：
+//   1. 扁平格式：{ '积极性格': 6.67, ... }
+//   2. 数组格式：{ dimensions: [{ dimensionId:1, normalizedScore:6.67, dimensionName:'积极性格' }] }
+const getScoreByDimId = (dimId: number): number => {
+  const data = props.data;
+  if (!data) return 0;
+  // 数组格式（API 直接返回的 happiness 对象）
+  if (data.dimensions && Array.isArray(data.dimensions)) {
+    const dim = data.dimensions.find((d: any) => d.dimensionId === dimId);
+    return dim?.normalizedScore || 0;
+  }
+  // 扁平格式（已转换过的对象，按 dimensionName 索引）
+  const dimConfig = HAPPINESS_DIMENSIONS.find(d => d.id === dimId);
+  if (dimConfig) {
+    return data[dimConfig.name] || 0;
+  }
+  return 0;
+};
+
 const updateChart = () => {
   if (!chartInstance) return;
 
   const dimensions = HAPPINESS_DIMENSIONS;
-  // 构造数据：外层是维度名（如果有），内层是得分
-  // 微缩图主要展示颜色和填充度
-  
-  // 修改为径向柱状图（类似南丁格尔图，但每个扇区角度相同，半径不同）
-  // 实际上幸福力图是：每个扇区代表一个维度，半径代表得分。
-  // ECharts 的 polar bar 默认是角度代表数值。
-  // 要实现"每个扇区角度相同，半径不同"，需要用 angleAxis type='category'
-  
+
   const option2 = {
     backgroundColor: 'transparent',
     polar: {
@@ -81,7 +94,7 @@ const updateChart = () => {
       {
         type: 'bar',
         data: dimensions.map((d) => ({
-          value: props.data?.[d.name] || 0,
+          value: getScoreByDimId(d.id),
           itemStyle: { color: d.color }
         })),
         coordinateSystem: 'polar',
@@ -96,7 +109,7 @@ const updateChart = () => {
       {
         type: 'bar',
         data: dimensions.map((d) => ({
-          value: 10 - (props.data?.[d.name] || 0), // 补齐到10分
+          value: 10 - getScoreByDimId(d.id), // 补齐到10分
           itemStyle: { 
             color: '#f9f9f9', // 浅灰背景
             borderColor: '#e0e0e0', // 边框

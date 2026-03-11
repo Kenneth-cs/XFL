@@ -17,6 +17,19 @@ export const SERVICE_STATUS = [
   '合同结束'
 ];
 
+// 男性长相选项（对应男性MV规则：一般=8.5, 帅/网红=12.5）
+export const MALE_APPEARANCE_OPTIONS = [
+  '一般',
+  '帅/网红'
+];
+
+// 女性长相选项（对应女性MV规则：一般=8.5, 漂亮/网红=12.5）
+export const FEMALE_APPEARANCE_OPTIONS = [
+  '一般',
+  '漂亮/网红'
+];
+
+// 通用长相选项（兼容旧代码）
 export const APPEARANCE_OPTIONS = [
   '一般',
   '帅/网红'

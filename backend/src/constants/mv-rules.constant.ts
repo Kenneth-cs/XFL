@@ -128,7 +128,6 @@ export const BEIJING_SHANGHAI_SCHEME: MvCalculationScheme = {
     ],
     [FemaleMvDimension.APPEARANCE]: [
       { condition: (a) => a === '一般', score: 8.5, label: '一般' },
-      { condition: (a) => a === '清秀' || a === '甜美' || a === '可爱', score: 10.5, label: '清秀/甜美' },
       { condition: (a) => a === '漂亮/网红', score: 12.5, label: '漂亮/网红' }
     ],
     [FemaleMvDimension.BRA_CUP]: [
@@ -246,7 +245,6 @@ export const NORTHEAST_XINJIANG_SCHEME: MvCalculationScheme = {
     ],
     [FemaleMvDimension.APPEARANCE]: [
       { condition: (a) => a === '一般', score: 8.5, label: '一般' },
-      { condition: (a) => a === '清秀' || a === '甜美' || a === '可爱', score: 10.5, label: '清秀/甜美' },
       { condition: (a) => a === '漂亮/网红', score: 12.5, label: '漂亮/网红' }
     ],
     [FemaleMvDimension.BRA_CUP]: [
@@ -364,7 +362,6 @@ export const GUANGDONG_SCHEME: MvCalculationScheme = {
     ],
     [FemaleMvDimension.APPEARANCE]: [
       { condition: (a) => a === '一般', score: 8.5, label: '一般' },
-      { condition: (a) => a === '清秀' || a === '甜美' || a === '可爱', score: 10.5, label: '清秀/甜美' },
       { condition: (a) => a === '漂亮/网红', score: 12.5, label: '漂亮/网红' }
     ],
     [FemaleMvDimension.BRA_CUP]: [
@@ -482,7 +479,6 @@ export const JIANGZHE_SCHEME: MvCalculationScheme = {
     ],
     [FemaleMvDimension.APPEARANCE]: [
       { condition: (a) => a === '一般', score: 8.5, label: '一般' },
-      { condition: (a) => a === '清秀' || a === '甜美' || a === '可爱', score: 10.5, label: '清秀/甜美' },
       { condition: (a) => a === '漂亮/网红', score: 12.5, label: '漂亮/网红' }
     ],
     [FemaleMvDimension.BRA_CUP]: [
@@ -599,7 +595,6 @@ export const NATIONWIDE_SCHEME: MvCalculationScheme = {
     ],
     [FemaleMvDimension.APPEARANCE]: [
       { condition: (a) => a === '一般', score: 8.5, label: '一般' },
-      { condition: (a) => a === '清秀' || a === '甜美' || a === '可爱', score: 10.5, label: '清秀/甜美' },
       { condition: (a) => a === '漂亮/网红', score: 12.5, label: '漂亮/网红' }
     ],
     [FemaleMvDimension.BRA_CUP]: [

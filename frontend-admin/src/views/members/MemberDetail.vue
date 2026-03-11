@@ -204,7 +204,7 @@
                       </span>
                     </template>
                     <a-select v-model:value="formState.extInfo.appearance">
-                      <a-select-option v-for="opt in options.APPEARANCE_OPTIONS" :key="opt" :value="opt">{{ opt }}</a-select-option>
+                      <a-select-option v-for="opt in appearanceOptions" :key="opt" :value="opt">{{ opt }}</a-select-option>
                     </a-select>
                   </a-form-item>
                 </a-col>
@@ -879,6 +879,14 @@ let fullHappinessChart: echarts.ECharts | null = null;
 // 权限判断
 const canAssignMatchmaker = computed(() => {
   return ['super_admin', 'admin', 'manager'].includes(userInfo.role);
+});
+
+// 根据性别返回对应的长相选项（男女选项不同，对应不同MV计算规则）
+const appearanceOptions = computed(() => {
+  if (formState.baseInfo.gender === '女') {
+    return options.FEMALE_APPEARANCE_OPTIONS;
+  }
+  return options.MALE_APPEARANCE_OPTIONS;
 });
 
 const formState = reactive<{
