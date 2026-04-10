@@ -113,7 +113,7 @@ export const BEIJING_SHANGHAI_SCHEME: MvCalculationScheme = {
       { condition: (age) => age >= 51, score: 2.5, label: '51岁以上' }
     ],
     [FemaleMvDimension.HEIGHT]: [
-      { condition: (h) => h < 158, score: 8.5, label: '158cm以下' },
+      { condition: (h) => h <= 158, score: 8.5, label: '158cm以下' },
       { condition: (h) => h >= 159 && h <= 163, score: 10.5, label: '159-163cm' },
       { condition: (h) => h >= 164 && h <= 168, score: 12.5, label: '164-168cm' },
       { condition: (h) => h >= 169 && h <= 173, score: 10.5, label: '169-173cm' },
@@ -230,7 +230,7 @@ export const NORTHEAST_XINJIANG_SCHEME: MvCalculationScheme = {
       { condition: (age) => age >= 51, score: 2.5, label: '51岁以上' }
     ],
     [FemaleMvDimension.HEIGHT]: [
-      { condition: (h) => h < 157, score: 8.5, label: '157cm以下' },
+      { condition: (h) => h <= 157, score: 8.5, label: '157cm以下' },
       { condition: (h) => h >= 158 && h <= 162, score: 10.5, label: '158-162cm' },
       { condition: (h) => h >= 163 && h <= 167, score: 12.5, label: '163-167cm' },
       { condition: (h) => h >= 168 && h <= 172, score: 10.5, label: '168-172cm' },
@@ -347,7 +347,7 @@ export const GUANGDONG_SCHEME: MvCalculationScheme = {
       { condition: (age) => age >= 51, score: 2.5, label: '51岁以上' }
     ],
     [FemaleMvDimension.HEIGHT]: [
-      { condition: (h) => h < 152, score: 8.5, label: '152cm以下' },
+      { condition: (h) => h <= 152, score: 8.5, label: '152cm以下' },
       { condition: (h) => h >= 153 && h <= 157, score: 10.5, label: '153-157cm' },
       { condition: (h) => h >= 158 && h <= 162, score: 12.5, label: '158-162cm' },
       { condition: (h) => h >= 163 && h <= 167, score: 10.5, label: '163-167cm' },
@@ -464,7 +464,7 @@ export const JIANGZHE_SCHEME: MvCalculationScheme = {
       { condition: (age) => age >= 51, score: 2.5, label: '51岁以上' }
     ],
     [FemaleMvDimension.HEIGHT]: [
-      { condition: (h) => h < 155, score: 8.5, label: '155cm以下' },
+      { condition: (h) => h <= 155, score: 8.5, label: '155cm以下' },
       { condition: (h) => h >= 156 && h <= 160, score: 10.5, label: '156-160cm' },
       { condition: (h) => h >= 161 && h <= 165, score: 12.5, label: '161-165cm' },
       { condition: (h) => h >= 166 && h <= 170, score: 10.5, label: '166-170cm' },
@@ -525,7 +525,7 @@ export const NATIONWIDE_SCHEME: MvCalculationScheme = {
       { condition: (age) => age > 35, score: 8.5, label: '35岁以上' }
     ],
     [MaleMvDimension.HEIGHT]: [
-      { condition: (h) => h < 170, score: 8.5, label: '170cm以下' },
+      { condition: (h) => h <= 170, score: 8.5, label: '170cm以下' },
       { condition: (h) => h >= 171 && h <= 175, score: 10.5, label: '171-175cm' },
       { condition: (h) => h >= 176 && h <= 180, score: 12.5, label: '176-180cm' },
       { condition: (h) => h > 180, score: 10.5, label: '180cm以上' }
@@ -580,7 +580,7 @@ export const NATIONWIDE_SCHEME: MvCalculationScheme = {
       { condition: (age) => age >= 51, score: 2.5, label: '51岁以上' }
     ],
     [FemaleMvDimension.HEIGHT]: [
-      { condition: (h) => h < 152, score: 8.5, label: '152cm以下' },
+      { condition: (h) => h <= 152, score: 8.5, label: '152cm以下' },
       { condition: (h) => h >= 153 && h <= 157, score: 10.5, label: '153-157cm' },
       { condition: (h) => h >= 158 && h <= 162, score: 12.5, label: '158-162cm' },
       { condition: (h) => h >= 163 && h <= 167, score: 10.5, label: '163-167cm' },
