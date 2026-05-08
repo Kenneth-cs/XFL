@@ -36,6 +36,17 @@
       </a-form>
     </div>
 
+    <div class="beian-footer">
+      <span>佛山幸福力婚恋文化产业有限公司版权所有</span>
+      <span class="sep">|</span>
+      <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2026035255号-1</a>
+      <span class="sep">|</span>
+      <span class="gongan-item">
+        <img :src="`${baseUrl}gongan.png`" alt="公安备案" />
+        <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44060802000425" target="_blank" rel="noopener">粤公网安备44060802000425号</a>
+      </span>
+    </div>
+
     <!-- 注册弹窗 -->
     <a-modal 
       v-model:open="registerVisible" 
@@ -112,6 +123,7 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 
 const router = useRouter();
+const baseUrl = import.meta.env.BASE_URL
 const loading = ref(false);
 const registerVisible = ref(false);
 const registerLoading = ref(false);
@@ -300,9 +312,12 @@ const handleRegister = async () => {
 .login-container {
   height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   background: #f0f2f5;
+  padding-bottom: 50px;
+  box-sizing: border-box;
 }
 
 .login-card {
@@ -354,5 +369,46 @@ const handleRegister = async () => {
 
 .terms-content li {
   margin-bottom: 8px;
+}
+
+.beian-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 16px 20px;
+  font-size: 12px;
+  color: #999;
+}
+
+.beian-footer .sep {
+  color: #ccc;
+  margin: 0 2px;
+}
+
+.beian-footer a {
+  color: #999;
+  text-decoration: none;
+}
+
+.beian-footer a:hover {
+  color: #1890ff;
+}
+
+.beian-footer .gongan-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.beian-footer .gongan-item img {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
 }
 </style>

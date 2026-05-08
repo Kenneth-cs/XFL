@@ -62,8 +62,17 @@
         </div>
       </a-layout-content>
       
-      <a-layout-footer style="text-align: center; padding: 12px 50px">
-        幸福力婚恋系统 ©2026
+      <a-layout-footer class="beian-footer-wrap">
+        <div class="beian-footer">
+          <span>佛山幸福力婚恋文化产业有限公司版权所有</span>
+          <span class="sep">|</span>
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2026035255号-1</a>
+          <span class="sep">|</span>
+          <span class="gongan-item">
+            <img :src="`${baseUrl}gongan.png`" alt="公安备案" />
+            <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44060802000425" target="_blank" rel="noopener">粤公网安备44060802000425号</a>
+          </span>
+        </div>
       </a-layout-footer>
     </a-layout>
   </a-layout>
@@ -80,6 +89,7 @@ import {
 } from '@ant-design/icons-vue';
 
 const collapsed = ref(false);
+const baseUrl = import.meta.env.BASE_URL
 const selectedKeys = ref<string[]>([]);
 const openKeys = ref<string[]>(['staff', 'system', 'members']);
 const router = useRouter();
@@ -146,5 +156,46 @@ const logout = () => {
   line-height: 32px;
   color: white;
   font-weight: bold;
+}
+
+.beian-footer-wrap {
+  text-align: center;
+  padding: 16px 50px;
+}
+
+.beian-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+  color: #999;
+}
+
+.beian-footer .sep {
+  color: #ccc;
+  margin: 0 2px;
+}
+
+.beian-footer a {
+  color: #999;
+  text-decoration: none;
+}
+
+.beian-footer a:hover {
+  color: #1890ff;
+}
+
+.beian-footer .gongan-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.beian-footer .gongan-item img {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
 }
 </style>

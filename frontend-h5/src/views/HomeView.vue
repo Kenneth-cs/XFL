@@ -81,6 +81,18 @@
         </p>
       </div>
     </div>
+
+    <!-- 备案信息 -->
+    <div class="beian-footer">
+      <span>佛山幸福力婚恋文化产业有限公司版权所有</span>
+      <span class="sep">|</span>
+      <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2026035255号-1</a>
+      <span class="sep">|</span>
+      <span class="gongan-item">
+        <img :src="`${baseUrl}gongan.png`" alt="公安备案" />
+        <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44060802000425" target="_blank" rel="noopener">粤公网安备44060802000425号</a>
+      </span>
+    </div>
   </div>
 </template>
 
@@ -91,6 +103,7 @@ import { showToast } from '@/utils/toast'
 
 const router = useRouter()
 const userStore = useUserStore()
+const baseUrl = import.meta.env.BASE_URL
 
 const handleEnter = () => {
   if (userStore.isLoggedIn) {
@@ -289,5 +302,41 @@ const handleLogout = () => {
   border: none;
   color: #fff;
   font-weight: 600;
+}
+
+.beian-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  text-align: center;
+  padding: 24px 16px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  font-size: 10px;
+  color: #999;
+  line-height: 2;
+}
+
+.beian-footer .sep {
+  color: #ccc;
+  margin: 0 2px;
+}
+
+.beian-footer a {
+  color: #999;
+  text-decoration: none;
+}
+
+.beian-footer .gongan-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.beian-footer .gongan-item img {
+  width: 12px;
+  height: 12px;
+  vertical-align: middle;
 }
 </style>
